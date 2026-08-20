@@ -1,0 +1,22 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.quasar/
+
+# Backend (Laravel)
+backend/vendor/
+backend/.env
+backend/storage/*.key
+backend/bootstrap/cache/*
+
+# IA Service (Python)
+ia-service/__pycache__/
+ia-service/venv/
+ia-service/*.pyc
+ia-service/models/*.h5
+ia-service/models/*.keras
+
+# General
+.env
+*.log
+.DS_Store
