@@ -1,12 +1,3 @@
-# Sistema Web de Trazabilidad Inteligente para el Mejoramiento de la Producción y Verificación de Origen del Café Boliviano en Procesos de Exportación
-
-**Universidad Técnica Privada Cosmos — UNITEPC**
-**Carrera:** Ingeniería de Sistemas
-**Proyecto de Grado para optar al Título de Licenciatura en Ingeniería de Sistemas**
-**Postulante:** Alex Butrón López
-**Cochabamba - Bolivia, 2026**
-
----
 
 ## Objetivo General
 
