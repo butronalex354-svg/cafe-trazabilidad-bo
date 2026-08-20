@@ -11,7 +11,7 @@
 
 Sistema web que permite el mejoramiento de la producción y la verificación de origen del café boliviano durante los procesos de exportación, incorporando inteligencia artificial para la detección de plagas y generación de códigos QR de trazabilidad.
 
-Documento completo del proyecto: [docs/documento.md](docs/documento.md)
+Documento completo del proyecto: [docs/requrimiento funcionales y no funcionales.md](<docs/requrimiento funcionales y no funcionales.md>)
 
 ---
 
@@ -85,7 +85,7 @@ cafe-trazabilidad-bo/
 │   ├── migrations/         # Creación de tablas
 │   └── seeds/              # Datos iniciales
 └── docs/                   # Documentación del proyecto
-    └── documento.md        # Documento completo de tesis
+    └── requrimiento funcionales y no funcionales.md   # Objetivos, requerimientos funcionales y no funcionales
 ```
 
 ---
