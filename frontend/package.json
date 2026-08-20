@@ -1,0 +1,27 @@
+{
+  "name": "cafe-trazabilidad-frontend",
+  "version": "0.1.0",
+  "description": "Frontend del Sistema Web de Trazabilidad Inteligente del Café Boliviano",
+  "scripts": {
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "lint": "eslint --ext .js,.vue ./src"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.0",
+    "quasar": "^2.16.0",
+    "axios": "^1.7.0",
+    "qrcode.vue": "^3.4.1",
+    "@quasar/extras": "^1.16.0"
+  },
+  "devDependencies": {
+    "@quasar/app-vite": "^1.9.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-vue": "^9.24.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
