@@ -30,12 +30,20 @@ Documento completo del proyecto: [docs/requrimiento funcionales y no funcionales
 
 ## Herramientas y Tecnologías
 
+### Diseño UI/UX
+- **Figma** — diseño de mockups/prototipos de cada pantalla (login, dashboard, formularios por módulo) antes de programarlas
+
+### Entorno de Desarrollo
+- **XAMPP** (Apache + MySQL + PHP) — servidor local para correr el backend y la base de datos
+- **Visual Studio Code** — editor de código para frontend, backend e IA
+
 ### Frontend
 - Quasar Framework (Vue 3)
 - Vue Router
 - Pinia (estado global)
 - Axios (consumo de la API REST)
 - vue-qrcode / qrcode.vue (generación y lectura de códigos QR)
+- VeeValidate (validación de formularios)
 
 ### Backend
 - Laravel (PHP)
@@ -45,6 +53,8 @@ Documento completo del proyecto: [docs/requrimiento funcionales y no funcionales
 - simple-qrcode (generación de códigos QR en backend)
 - Laravel DomPDF (generación de certificados/reportes PDF)
 - Laravel Notifications (alertas al productor)
+- Laravel Storage (almacenamiento de imágenes de cultivo y diagnósticos de IA)
+- L5-Swagger / OpenAPI (documentación de los endpoints de la API)
 
 ### Servicio de Inteligencia Artificial
 - Python 3
@@ -71,6 +81,8 @@ Documento completo del proyecto: [docs/requrimiento funcionales y no funcionales
 
 ### Pruebas y Despliegue
 - Postman (pruebas de API)
+- PHPUnit (pruebas automatizadas del backend)
+- Laravel Pint (formato y estilo de código)
 - Servidor local / hosting académico / Railway-Render (demo)
 
 ---
