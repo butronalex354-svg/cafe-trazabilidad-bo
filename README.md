@@ -49,7 +49,8 @@ Documento completo del proyecto: [docs/requrimiento funcionales y no funcionales
 ### Servicio de Inteligencia Artificial
 - Python 3
 - FastAPI + Uvicorn (API del servicio de IA)
-- TensorFlow / Keras (modelo de detección de plagas y enfermedades)
+- **Teachable Machine** (Google) — entrenamiento del modelo de detección de plagas/enfermedades sin necesidad de programar el entrenamiento, subiendo imágenes de plantas sanas y enfermas
+- TensorFlow / Keras (carga y ejecución del modelo exportado desde Teachable Machine)
 - OpenCV (procesamiento de imágenes)
 - NumPy, Pillow
 
