@@ -16,8 +16,4 @@
 
 ## Diagrama de Flujo
 
-![Diagrama de Flujo 1](imagenes_diagramas/image6.png)
-
-![Diagrama de Flujo 2](imagenes_diagramas/image7.png)
-
-![Diagrama de Flujo 3](imagenes_diagramas/image8.png)
+![Diagrama de Flujo Maestro](Diagrama_Flujo_Maestro.png)
