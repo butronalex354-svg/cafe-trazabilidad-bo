@@ -2,17 +2,29 @@
 
 ## Diagrama por cada Módulo
 
-![Imagen 1](imagenes_diagramas/image1.png)
+![Módulo Transversal - Usuarios](imagenes_diagramas/Modulo_Transversal.png)
 
-![Imagen 2](imagenes_diagramas/image2.png)
+![Módulo 1 - Producción](imagenes_diagramas/Modulo_Produccion.png)
 
-![Imagen 3](imagenes_diagramas/image3.png)
+![Módulo 2 - Monitoreo](imagenes_diagramas/Modulo_Monitoreo.png)
 
-![Imagen 4](imagenes_diagramas/image4.png)
+![Módulo 3 - Calidad](imagenes_diagramas/Modulo_Calidad.png)
+
+![Módulo 4 - Procesamiento](imagenes_diagramas/Modulo_Procesamiento.png)
+
+![Módulo 5 - Inventario](imagenes_diagramas/Modulo_Inventario.png)
+
+![Módulo 6 - Verificación](imagenes_diagramas/Modulo_Verificacion.png)
+
+![Módulo 7 - Exportación](imagenes_diagramas/Modulo_Exportacion.png)
 
 ## Diagrama de Entidad-Relación
 
-![Diagrama Entidad-Relacion](imagenes_diagramas/image5.png)
+![Diagrama Entidad-Relacion Completo](Diagrama_ER_Completo.png)
+
+## Diagrama Físico de Base de Datos
+
+![Diagrama Fisico de Base de Datos](Diagrama_BD_Fisico.png)
 
 ## Diagrama de Flujo
 
