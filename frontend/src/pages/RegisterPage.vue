@@ -76,6 +76,62 @@
           />
         </div>
 
+        <div class="row q-col-gutter-sm">
+          <div class="col-6">
+            <div class="field-label">CI</div>
+            <q-input
+              v-model="ci"
+              type="text"
+              placeholder="1234567 LP"
+              dense
+              borderless
+              dark
+              class="gold-input"
+              :rules="[val => !!val || 'El CI es obligatorio']"
+            />
+          </div>
+          <div class="col-6">
+            <div class="field-label">TELÉFONO</div>
+            <q-input
+              v-model="telefono"
+              type="tel"
+              placeholder="70000000"
+              dense
+              borderless
+              dark
+              class="gold-input"
+              :rules="[val => !!val || 'El teléfono es obligatorio']"
+            />
+          </div>
+        </div>
+
+        <div>
+          <div class="field-label">WHATSAPP <span class="text-grey-6">(si es distinto al teléfono)</span></div>
+          <q-input
+            v-model="whatsapp"
+            type="tel"
+            placeholder="70000000"
+            dense
+            borderless
+            dark
+            class="gold-input"
+          />
+        </div>
+
+        <div>
+          <div class="field-label">DIRECCIÓN</div>
+          <q-input
+            v-model="direccion"
+            type="text"
+            placeholder="Comunidad / municipio / provincia"
+            dense
+            borderless
+            dark
+            class="gold-input"
+            :rules="[val => !!val || 'La dirección es obligatoria']"
+          />
+        </div>
+
         <div v-if="errorMsg" class="text-negative text-caption">{{ errorMsg }}</div>
 
         <q-btn
@@ -109,6 +165,10 @@ const nombre = ref('')
 const email = ref('')
 const password = ref('')
 const passwordConfirmation = ref('')
+const ci = ref('')
+const telefono = ref('')
+const whatsapp = ref('')
+const direccion = ref('')
 const showPassword = ref(false)
 const errorMsg = ref('')
 const cargando = ref(false)
@@ -121,7 +181,12 @@ async function onSubmit () {
   }
   cargando.value = true
   try {
-    const user = await auth.register(nombre.value, email.value, password.value, passwordConfirmation.value)
+    const user = await auth.register(nombre.value, email.value, password.value, passwordConfirmation.value, {
+      ci: ci.value,
+      telefono: telefono.value,
+      whatsapp: whatsapp.value,
+      direccion: direccion.value
+    })
     router.push(`/${user.rol}`)
   } catch (err) {
     errorMsg.value = err.response?.data?.message || 'No se pudo crear la cuenta.'

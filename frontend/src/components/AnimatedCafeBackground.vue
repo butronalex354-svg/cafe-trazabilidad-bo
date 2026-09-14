@@ -1,4 +1,8 @@
 <template>
+  <svg class="mountains" viewBox="0 0 1200 400" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0,400 L0,260 L120,190 L230,250 L340,150 L430,220 L520,120 L620,210 L700,160 L820,240 L900,180 L1000,230 L1080,170 L1200,240 L1200,400 Z" fill="#1a1108" opacity="0.55" />
+    <path d="M0,400 L0,310 L90,260 L200,300 L300,230 L410,290 L500,220 L610,280 L720,210 L830,270 L940,215 L1050,275 L1200,230 L1200,400 Z" fill="#120c07" opacity="0.75" />
+  </svg>
   <canvas ref="networkCanvas" class="network-canvas"></canvas>
   <div class="glow-orb glow-orb-1"></div>
   <div class="glow-orb glow-orb-2"></div>
@@ -112,6 +116,16 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.mountains {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 40%;
+  z-index: 0;
+}
+
 .network-canvas {
   position: absolute;
   inset: 0;

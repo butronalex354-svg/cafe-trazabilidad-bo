@@ -1,1 +1,61 @@
 // app global css
+
+// ============================================================
+// TEMA DE COLOR DEL SISTEMA (variables centralizadas)
+// ------------------------------------------------------------
+// Todo el color "dorado/cafe" del sistema sale de aqui, no debe
+// escribirse un color hexadecimal suelto en ningun componente nuevo.
+// Cuando se arme la pantalla de Ajustes para que el Administrador
+// elija su propio color, ese cambio se aplica reescribiendo estas
+// mismas variables (via JS: document.documentElement.style.setProperty),
+// y como todo el sistema ya lee de aqui, se actualiza junto sin tener
+// que tocar cada pantalla una por una.
+// ============================================================
+:root {
+  --color-primario: #e0a84a;         // dorado principal
+  --color-primario-claro: #f0c878;   // dorado claro (texto sobre fondo oscuro, hover)
+  --color-primario-oscuro: #8a5a1e;  // cafe oscuro (fin de los degradados)
+  --color-secundario: #c98d3a;       // dorado/cafe medio (paso intermedio del degradado)
+  --color-acento: #d6a84a;           // dorado de acento
+
+  --color-texto-oscuro: #4a3a2a;     // texto principal sobre fondo claro
+  --color-texto-suave: #8a7458;      // texto secundario/etiquetas
+
+  --color-fondo-claro: #faf6f0;      // fondo general de las paginas
+  --color-fondo-tarjeta: #fff6e6;    // fondo de tarjetas/cajas
+  --color-fondo-oscuro: #2a1f18;     // fondo del header/menu lateral
+
+  // Degradado principal: se usa en botones activos, iconos, la burbuja del menu
+  --gradiente-principal: linear-gradient(120deg, var(--color-primario) 0%, var(--color-secundario) 30%, var(--color-primario-oscuro) 55%, var(--color-acento) 80%, #a86a28 100%);
+  // Version mas simple del mismo degradado, para iconos chicos donde no se nota el detalle
+  --gradiente-icono: linear-gradient(145deg, var(--color-primario) 0%, var(--color-primario-oscuro) 100%);
+  // Degradado oscuro del header/drawer
+  --gradiente-oscuro: linear-gradient(165deg, #2f2318 0%, #241a11 55%, #1a130c 100%);
+  // Fondo general de las paginas (todas las pantallas del Productor lo usan)
+  --gradiente-fondo-pagina: linear-gradient(170deg, #fdf6e9 0%, #f3e0bd 45%, #ecd3a3 100%);
+}
+
+// Fondo de pagina compartido por Inicio, Parcelas y Producción, para que se
+// vea igual en todas en vez de que unas queden con el crema plano de antes.
+.pagina-tema {
+  background: var(--gradiente-fondo-pagina);
+  min-height: calc(100vh - 50px);
+}
+
+// Caja/tarjeta/lista con el color del tema, para usar en vez de "bg-white"
+// en CUALQUIER pantalla del sistema (listas, tarjetas, avisos). El blanco
+// liso ya no se usa en ningun lado - todo tiene que salir de esta clase.
+.caja-tema {
+  background: linear-gradient(160deg, #fdf1d9 0%, #f6dfab 100%) !important;
+  border-color: rgba(184, 132, 42, 0.4) !important;
+}
+
+// Evita que aparezca una barra de scroll horizontal fea cuando algo se
+// desborda un poco del ancho de la pantalla (comun en ventanas muy angostas).
+// El contenido que de verdad necesita scroll horizontal propio (como una
+// tabla ancha) sigue haciendo scroll dentro de si mismo, esto solo afecta a
+// la pagina completa.
+html, body, #q-app, .q-layout {
+  overflow-x: hidden;
+  max-width: 100vw;
+}

@@ -70,6 +70,7 @@ export default defineConfig((/* ctx */) => {
     devServer: {
       // vueDevtools: true,
       // https: true,
+      host: '0.0.0.0', // asi se puede entrar desde el celular (misma wifi) usando la IP de la compu
       open: true // opens browser window automatically
     },
 
@@ -78,7 +79,7 @@ export default defineConfig((/* ctx */) => {
       config: {},
 
       // iconSet: 'material-icons', // Quasar icon set
-      // lang: 'en-US', // Quasar language pack
+      lang: 'es', // Quasar language pack: para que el calendario y textos internos salgan en español
 
       // For special cases outside of where the auto-import strategy can have an impact
       // (like functional components as one of the examples),
@@ -88,7 +89,7 @@ export default defineConfig((/* ctx */) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Notify']
+      plugins: ['Notify', 'Dialog', 'Screen']
     },
 
     // animations: 'all', // --- includes all animations

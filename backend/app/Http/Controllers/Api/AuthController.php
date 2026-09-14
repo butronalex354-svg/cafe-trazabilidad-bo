@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Productor;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +20,11 @@ class AuthController extends Controller
             'nombre' => 'required|string|max:150',
             'email' => 'required|email|max:150|unique:usuario,email',
             'password' => 'required|string|min:6|confirmed',
+            // RF01: el registro de un productor exige tambien sus datos personales.
+            'ci' => 'required|string|max:20',
+            'telefono' => 'required|string|max:20',
+            'whatsapp' => 'nullable|string|max:20',
+            'direccion' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -33,6 +39,15 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password,
             'rol' => 'productor',
+        ]);
+
+        Productor::create([
+            'usuario_id' => $user->id,
+            'nombre_completo' => $request->nombre,
+            'ci' => $request->ci,
+            'telefono' => $request->telefono,
+            'whatsapp' => $request->whatsapp ?: $request->telefono,
+            'direccion' => $request->direccion,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;

@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1<% if (ctx.mode.cordova || ctx.mode.capacitor) { %>, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover<% } %>">
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;<% if (ctx.dev) { %> connect-src 'self' ws://localhost:* http://127.0.0.1:8000 http://localhost:8000; worker-src 'self' blob:;<% } %>"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:;<% if (ctx.dev) { %> connect-src 'self' ws://localhost:* ws://*:9000 http://*:8000; worker-src 'self' blob:;<% } %>"
     />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

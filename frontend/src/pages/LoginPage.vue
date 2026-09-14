@@ -3,9 +3,11 @@
     <AnimatedCafeBackground />
 
     <div class="login-card">
-      <q-icon name="coffee" class="bean-watermark" />
       <div class="text-center q-mb-md">
         <div class="logo-frame">
+          <span class="steam s1"></span>
+          <span class="steam s2"></span>
+          <span class="steam s3"></span>
           <img :src="logoCafeAndino" alt="Café Andino" class="brand-logo" />
         </div>
       </div>
@@ -105,7 +107,7 @@ async function onSubmit () {
   errorMsg.value = ''
   cargando.value = true
   try {
-    const user = await auth.login(email.value, password.value)
+    const user = await auth.login(email.value, password.value, recordar.value)
     router.push(`/${user.rol}`)
   } catch (err) {
     errorMsg.value = err.response?.data?.message || 'No se pudo iniciar sesión.'
@@ -144,17 +146,6 @@ async function onSubmit () {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.bean-watermark {
-  position: absolute;
-  top: -18px;
-  right: -18px;
-  font-size: 130px;
-  color: rgba(224, 168, 74, 0.06);
-  transform: rotate(18deg);
-  pointer-events: none;
-  z-index: 0;
-}
-
 .logo-frame {
   position: relative;
   display: inline-block;
@@ -168,6 +159,29 @@ async function onSubmit () {
   filter: blur(8px);
   z-index: -1;
   border-radius: 50%;
+}
+
+.steam {
+  position: absolute;
+  top: 6%;
+  width: 10px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(to top, rgba(255, 240, 220, 0) 0%, rgba(255, 240, 220, 0.35) 40%, rgba(255, 240, 220, 0) 100%);
+  filter: blur(3px);
+  pointer-events: none;
+  animation: steamRise 4.5s ease-in infinite;
+  opacity: 0;
+}
+.steam.s1 { left: 40%; animation-delay: 0s; }
+.steam.s2 { left: 50%; animation-delay: 1.4s; height: 46px; }
+.steam.s3 { left: 60%; animation-delay: 2.6s; }
+@keyframes steamRise {
+  0% { opacity: 0; transform: translateY(0) translateX(0) scaleX(1); }
+  15% { opacity: .55; }
+  50% { transform: translateY(-38px) translateX(-6px) scaleX(1.3); }
+  85% { opacity: .12; }
+  100% { opacity: 0; transform: translateY(-78px) translateX(6px) scaleX(1.6); }
 }
 .brand-logo {
   width: 230px;

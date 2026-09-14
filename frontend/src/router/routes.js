@@ -12,7 +12,10 @@ const routes = [
     component: () => import('@/layouts/MainLayout.vue'),
     meta: { requiresAuth: true, rol: 'productor' },
     children: [
-      { path: '', component: () => import('@/pages/DashboardPage.vue') }
+      { path: '', component: () => import('@/pages/DashboardPage.vue') },
+      { path: 'parcelas', component: () => import('@/pages/ParcelasPage.vue') },
+      { path: 'produccion', component: () => import('@/pages/ProduccionPage.vue') },
+      { path: 'monitoreo', component: () => import('@/pages/MonitoreoPage.vue') }
     ]
   },
   {

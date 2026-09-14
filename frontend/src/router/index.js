@@ -7,6 +7,7 @@ import {
 } from 'vue-router'
 
 import routes from './routes.js'
+import { getToken, getUser } from '@/utils/authStorage'
 
 /*
  * If not building with SSR mode, you can
@@ -33,8 +34,8 @@ export default defineRouter((/* { store, ssrContext } */) => {
   })
 
   Router.beforeEach((to) => {
-    const token = localStorage.getItem('token')
-    const user = JSON.parse(localStorage.getItem('user') || 'null')
+    const token = getToken()
+    const user = getUser()
 
     if (to.meta.requiresAuth && !token) {
       return '/login'
