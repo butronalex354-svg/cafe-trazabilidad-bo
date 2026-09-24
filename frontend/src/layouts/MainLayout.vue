@@ -33,42 +33,47 @@
 
         <!-- Ajustes -->
         <q-btn flat dense round icon="settings" class="q-ml-xs">
-          <q-menu anchor="bottom right" self="top right">
-            <q-list style="min-width: 240px" class="caja-tema">
-              <q-item-label header>Ajustes</q-item-label>
+          <q-menu anchor="bottom right" self="top right" content-class="caja-tema tarjeta-ajustes">
+            <div class="row items-center q-pa-md ajustes-perfil">
+              <q-avatar size="42px" color="brown-6" text-color="white" class="q-mr-sm">{{ inicialesUsuario }}</q-avatar>
+              <div>
+                <div class="text-body2 text-weight-medium text-brown-9">{{ auth.user?.nombre }}</div>
+                <div class="text-caption text-grey-7">{{ etiquetaRol }}</div>
+              </div>
+            </div>
 
-              <q-item-label header class="text-caption q-pb-none">Tamaño de letra</q-item-label>
-              <q-item class="q-pt-none">
-                <q-item-section>
-                  <div class="row q-gutter-xs">
-                    <q-btn
-                      v-for="opcion in opcionesTamano"
-                      :key="opcion.valor"
-                      dense
-                      no-caps
-                      :outline="tamanoTexto !== opcion.valor"
-                      :unelevated="tamanoTexto === opcion.valor"
-                      :color="tamanoTexto === opcion.valor ? 'brown-8' : 'brown-6'"
-                      :label="opcion.label"
-                      class="col"
-                      @click="cambiarTamanoTexto(opcion.valor)"
-                    />
-                  </div>
-                </q-item-section>
-              </q-item>
+            <q-separator />
 
-              <q-separator />
+            <div class="q-pa-md">
+              <div class="text-caption text-grey-7 q-mb-sm">Tamaño de letra</div>
+              <div class="selector-tamano">
+                <div
+                  v-for="opcion in opcionesTamano"
+                  :key="opcion.valor"
+                  class="selector-tamano-opcion"
+                  :class="{ 'selector-tamano-opcion--activo': tamanoTexto === opcion.valor }"
+                  @click="cambiarTamanoTexto(opcion.valor)"
+                >{{ opcion.label }}</div>
+              </div>
+            </div>
 
-              <q-item clickable v-close-popup @click="proximamente">
-                <q-item-section avatar><q-icon name="person" /></q-item-section>
+            <q-separator />
+
+            <q-list class="q-py-xs">
+              <q-item clickable v-close-popup class="ajustes-item" @click="abrirMiCuenta">
+                <q-item-section avatar><q-icon name="person" color="brown-7" /></q-item-section>
                 <q-item-section>Mi cuenta</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="proximamente">
-                <q-item-section avatar><q-icon name="notifications_active" /></q-item-section>
+              <q-item clickable v-close-popup class="ajustes-item" @click="proximamente">
+                <q-item-section avatar><q-icon name="notifications_active" color="brown-7" /></q-item-section>
                 <q-item-section>Preferencias de notificación</q-item-section>
               </q-item>
-              <q-separator />
-              <q-item clickable v-close-popup @click="cerrarSesion">
+            </q-list>
+
+            <q-separator />
+
+            <q-list class="q-py-xs">
+              <q-item clickable v-close-popup class="ajustes-item" @click="cerrarSesion">
                 <q-item-section avatar><q-icon name="logout" color="negative" /></q-item-section>
                 <q-item-section class="text-negative">Cerrar sesión</q-item-section>
               </q-item>
@@ -136,18 +141,57 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <!-- Mi cuenta: datos de la cuenta de acceso (distinto del "registro de
+         productor" que se edita en Parcelas) y cambio de contraseña. -->
+    <q-dialog v-model="dlgCuenta">
+      <q-card class="caja-tema" style="min-width: 320px; max-width: 440px; width: 100%">
+        <q-card-section>
+          <div class="text-h6 text-brown-9">Mi cuenta</div>
+          <div class="text-caption text-grey-7">Datos de tu cuenta de acceso</div>
+        </q-card-section>
+
+        <q-card-section class="q-gutter-md">
+          <q-input v-model="formCuenta.nombre" label="Nombre" outlined dense bg-color="white" />
+          <q-input v-model="formCuenta.email" label="Email" type="email" outlined dense bg-color="white" />
+          <q-input :model-value="etiquetaRol" label="Rol" outlined dense readonly bg-color="grey-2" />
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-px-md">
+          <q-btn unelevated color="brown-8" label="Guardar cambios" no-caps :loading="guardandoCuenta" @click="guardarCuenta" />
+        </q-card-actions>
+
+        <q-separator class="q-my-sm" />
+
+        <q-card-section>
+          <div class="text-subtitle2 text-brown-9 q-mb-sm">Cambiar contraseña</div>
+          <div class="q-gutter-md">
+            <q-input v-model="formPassword.actual" label="Contraseña actual" type="password" outlined dense bg-color="white" />
+            <q-input v-model="formPassword.nueva" label="Contraseña nueva" type="password" outlined dense bg-color="white" hint="Mínimo 6 caracteres" />
+            <q-input v-model="formPassword.confirmacion" label="Confirmar contraseña nueva" type="password" outlined dense bg-color="white" />
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-px-md q-pb-md">
+          <q-btn flat label="Cerrar" color="grey-8" no-caps v-close-popup />
+          <q-btn unelevated color="brown-8" label="Cambiar contraseña" no-caps :loading="cambiandoPassword" @click="guardarPassword" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/auth'
+import { useCalidadStore } from '@/stores/calidad'
 import logoCafeAndino from '@/assets/logo-cafe-andino-badge.png'
 import logoCompleto from '@/assets/logo-cafe-andino.png'
 
 const auth = useAuthStore()
+const calidad = useCalidadStore()
 const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
@@ -219,6 +263,14 @@ const inicialesUsuario = computed(() => {
 // todavia no estan construidos quedan visibles (para que se vea el mapa
 // completo del sistema) pero avisan "proximamente" en vez de dar un 404.
 const itemsMenu = computed(() => {
+  if (auth.rol === 'administrador') {
+    return [
+      { label: 'Panel', detalle: 'Usuarios y reportes', icono: 'dashboard', ruta: '/administrador' },
+      { label: 'Reclamos', detalle: 'Reclamos de compradores', icono: 'support_agent' },
+      { label: 'Exportación', detalle: 'Autorizar lotes verificados', icono: 'local_shipping' },
+      { label: 'Auditoría', detalle: 'Historial de cambios', icono: 'history' }
+    ]
+  }
   if (auth.rol !== 'productor') {
     return [{ label: 'Dashboard', detalle: '', icono: 'dashboard', ruta: `/${auth.rol}` }]
   }
@@ -227,10 +279,10 @@ const itemsMenu = computed(() => {
     { label: 'Parcelas', detalle: 'Gestión de parcelas', icono: 'map', ruta: '/productor/parcelas' },
     { label: 'Producción', detalle: 'Cosechas y lotes', icono: 'agriculture', ruta: '/productor/produccion' },
     { label: 'Monitoreo', detalle: 'Clima y observaciones', icono: 'wb_cloudy', ruta: '/productor/monitoreo' },
-    { label: 'Procesamiento', detalle: 'Etapas post-cosecha', icono: 'settings_suggest', ruta: null },
-    { label: 'Calidad', detalle: 'Diagnóstico IA', icono: 'eco', ruta: null, badge: 1 },
-    { label: 'Inventario', detalle: 'Stock por lote', icono: 'inventory_2', ruta: null },
-    { label: 'Alertas', detalle: 'Plagas y avisos', icono: 'notifications_active', ruta: null, badge: 2 }
+    { label: 'Procesamiento', detalle: 'Etapas post-cosecha', icono: 'settings_suggest', ruta: '/productor/procesamiento' },
+    { label: 'Calidad', detalle: 'Diagnóstico IA', icono: 'eco', ruta: '/productor/calidad' },
+    { label: 'Inventario', detalle: 'Stock por lote', icono: 'inventory_2', ruta: '/productor/inventario' },
+    { label: 'Alertas', detalle: 'Plagas y avisos', icono: 'notifications_active', ruta: '/productor/calidad?seccion=alertas', badge: calidad.alertasNoLeidas }
   ]
 })
 
@@ -239,8 +291,18 @@ const notificaciones = ref([
   // esto se llenara desde el backend en vez de estar escrito a mano aqui.
 ])
 
+// Carga el conteo real de alertas no leidas para el globito del menu
+// (Modulo 4 - Calidad, RF09), apenas entra el productor al sistema.
+onMounted(() => {
+  if (auth.rol === 'productor') {
+    calidad.cargarAlertas()
+  }
+})
+
 function esRutaActual (ruta) {
-  return !!ruta && route.path === ruta
+  // "ruta" puede traer un query string pegado (ej. "/productor/calidad?seccion=alertas"),
+  // asi que se compara solo la parte del path, no la URL completa.
+  return !!ruta && route.path === ruta.split('?')[0]
 }
 
 // "Burbuja" flotante que marca SOLO la seccion activa (no sigue al mouse en
@@ -285,6 +347,58 @@ function irA (item) {
 
 function proximamente () {
   $q.notify({ message: 'Todavía no está construido — próximamente.', color: 'grey-8', icon: 'schedule' })
+}
+
+// "Mi cuenta": nombre/email de la cuenta de acceso (auth.user), y cambio de
+// contraseña. Es un dato distinto del "registro de productor" (Parcelas).
+const dlgCuenta = ref(false)
+const formCuenta = ref({ nombre: '', email: '' })
+const formPassword = ref({ actual: '', nueva: '', confirmacion: '' })
+const guardandoCuenta = ref(false)
+const cambiandoPassword = ref(false)
+
+function abrirMiCuenta () {
+  formCuenta.value = { nombre: auth.user?.nombre || '', email: auth.user?.email || '' }
+  formPassword.value = { actual: '', nueva: '', confirmacion: '' }
+  dlgCuenta.value = true
+}
+
+async function guardarCuenta () {
+  if (!formCuenta.value.nombre || !formCuenta.value.email) {
+    $q.notify({ type: 'negative', message: 'Completa nombre y email.' })
+    return
+  }
+  guardandoCuenta.value = true
+  try {
+    await auth.actualizarCuenta(formCuenta.value.nombre, formCuenta.value.email)
+    $q.notify({ type: 'positive', message: 'Cuenta actualizada.' })
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudo actualizar la cuenta.' })
+  } finally {
+    guardandoCuenta.value = false
+  }
+}
+
+async function guardarPassword () {
+  const { actual, nueva, confirmacion } = formPassword.value
+  if (!actual || !nueva || !confirmacion) {
+    $q.notify({ type: 'negative', message: 'Completa los 3 campos de contraseña.' })
+    return
+  }
+  if (nueva !== confirmacion) {
+    $q.notify({ type: 'negative', message: 'La confirmación no coincide con la contraseña nueva.' })
+    return
+  }
+  cambiandoPassword.value = true
+  try {
+    const mensaje = await auth.cambiarPassword(actual, nueva, confirmacion)
+    $q.notify({ type: 'positive', message: mensaje || 'Contraseña actualizada.' })
+    formPassword.value = { actual: '', nueva: '', confirmacion: '' }
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudo cambiar la contraseña.' })
+  } finally {
+    cambiandoPassword.value = false
+  }
 }
 
 async function cerrarSesion () {

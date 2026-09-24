@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    // Modulo 4 - Calidad (RF07): microservicio FastAPI con el modelo de IA
+    // que diagnostica las fotos de las plantas de cafe.
+    'ia' => [
+        'url' => env('IA_SERVICE_URL', 'http://127.0.0.1:8001'),
+    ],
+
 ];

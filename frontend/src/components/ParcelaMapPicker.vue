@@ -69,8 +69,11 @@ onMounted(() => {
     ubicarMarcador(e.latlng.lat, e.latlng.lng)
   })
 
-  // el mapa a veces nace con tamaño incorrecto dentro de un q-dialog
-  setTimeout(() => map.invalidateSize(), 200)
+  // el mapa a veces nace con tamaño incorrecto dentro de un q-dialog, o se
+  // dibujan mal algunas esquinas si la pantalla todavia esta animando su
+  // entrada. Se refuerza con varios redibujados forzados al toque.
+  setTimeout(() => map && map.invalidateSize(), 200)
+  setTimeout(() => map && map.invalidateSize(), 500)
 })
 
 watch(() => props.modelValue, (nuevo) => {

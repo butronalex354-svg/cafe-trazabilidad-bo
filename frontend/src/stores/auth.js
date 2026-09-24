@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { api } from '@/boot/axios'
-import { getToken, getUser, setAuth, clearAuth } from '@/utils/authStorage'
+import { getToken, getUser, setAuth, clearAuth, updateStoredUser } from '@/utils/authStorage'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -23,6 +23,8 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async register (nombre, email, password, passwordConfirmation, datosProductor = {}) {
+      // La cuenta queda "pendiente" hasta que el Administrador la aprueba,
+      // asi que el registro ya NO entrega token ni inicia sesion sola.
       const { data } = await api.post('/register', {
         nombre,
         email,
@@ -33,10 +35,23 @@ export const useAuthStore = defineStore('auth', {
         whatsapp: datosProductor.whatsapp,
         direccion: datosProductor.direccion
       })
-      this.token = data.token
+      return data.message
+    },
+
+    async actualizarCuenta (nombre, email) {
+      const { data } = await api.put('/me', { nombre, email })
       this.user = data.user
-      setAuth(data.token, data.user, true)
+      updateStoredUser(data.user)
       return data.user
+    },
+
+    async cambiarPassword (passwordActual, passwordNueva, passwordNuevaConfirmation) {
+      const { data } = await api.put('/me/password', {
+        password_actual: passwordActual,
+        password_nueva: passwordNueva,
+        password_nueva_confirmation: passwordNuevaConfirmation
+      })
+      return data.message
     },
 
     async logout () {

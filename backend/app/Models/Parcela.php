@@ -42,4 +42,9 @@ class Parcela extends Model
     {
         return $this->hasMany(Observacion::class, 'parcela_id');
     }
+
+    public function diagnosticos(): HasMany
+    {
+        return $this->hasMany(Diagnostico::class, 'parcela_id');
+    }
 }

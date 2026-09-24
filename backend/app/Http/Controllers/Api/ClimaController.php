@@ -39,7 +39,8 @@ class ClimaController extends Controller
             'latitude' => $coords['lat'],
             'longitude' => $coords['lng'],
             'current' => 'temperature_2m,relative_humidity_2m,precipitation_probability',
-            'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_probability_max',
+            'daily' => 'temperature_2m_max,temperature_2m_min,apparent_temperature_max,apparent_temperature_min,'
+                . 'precipitation_probability_max,precipitation_sum,windspeed_10m_max,uv_index_max,sunrise,sunset',
             'timezone' => 'auto',
             'forecast_days' => 7,
         ]);
@@ -75,7 +76,14 @@ class ClimaController extends Controller
                 'fecha' => $fecha,
                 'temperatura_max' => $datos['daily']['temperature_2m_max'][$i] ?? null,
                 'temperatura_min' => $datos['daily']['temperature_2m_min'][$i] ?? null,
+                'sensacion_max' => $datos['daily']['apparent_temperature_max'][$i] ?? null,
+                'sensacion_min' => $datos['daily']['apparent_temperature_min'][$i] ?? null,
                 'probabilidad_lluvia' => $datos['daily']['precipitation_probability_max'][$i] ?? null,
+                'lluvia_mm' => $datos['daily']['precipitation_sum'][$i] ?? null,
+                'viento_max' => $datos['daily']['windspeed_10m_max'][$i] ?? null,
+                'indice_uv' => $datos['daily']['uv_index_max'][$i] ?? null,
+                'amanecer' => $datos['daily']['sunrise'][$i] ?? null,
+                'atardecer' => $datos['daily']['sunset'][$i] ?? null,
             ];
         }
 

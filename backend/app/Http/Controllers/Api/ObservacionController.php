@@ -80,6 +80,55 @@ class ObservacionController extends Controller
     }
 
     /**
+     * RF05: editar una observacion propia (fecha, nota y, opcionalmente,
+     * reemplazar la foto). Si no se manda una foto nueva, se conserva la
+     * que ya tenia.
+     */
+    public function update(Request $request, int $id)
+    {
+        $productor = $this->productorAutenticado($request);
+
+        $observacion = Observacion::whereHas('parcela', function ($q) use ($productor) {
+                $q->where('productor_id', $productor->id);
+            })
+            ->find($id);
+
+        if (! $observacion) {
+            return response()->json(['message' => 'Observación no encontrada.'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'fecha' => 'required|date_format:Y-m-d|after_or_equal:2000-01-01|before_or_equal:2100-12-31',
+            'nota' => 'required|string|max:2000',
+            'foto' => 'nullable|image|max:5120', // 5MB
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Datos invalidos.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $datos = [
+            'fecha' => $request->fecha,
+            'nota' => $request->nota,
+        ];
+
+        if ($request->hasFile('foto')) {
+            if ($observacion->foto_url) {
+                Storage::disk('public')->delete(str_replace('/storage/', '', $observacion->foto_url));
+            }
+            $ruta = $request->file('foto')->store('observaciones', 'public');
+            $datos['foto_url'] = Storage::url($ruta);
+        }
+
+        $observacion->update($datos);
+
+        return response()->json($observacion);
+    }
+
+    /**
      * Eliminar una observacion propia (y su foto, si tiene).
      */
     public function destroy(Request $request, int $id)

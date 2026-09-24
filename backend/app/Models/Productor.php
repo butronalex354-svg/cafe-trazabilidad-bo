@@ -33,4 +33,9 @@ class Productor extends Model
     {
         return $this->hasMany(Parcela::class, 'productor_id');
     }
+
+    public function alertas(): HasMany
+    {
+        return $this->hasMany(Alerta::class, 'productor_id');
+    }
 }

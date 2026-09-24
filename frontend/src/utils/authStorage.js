@@ -21,6 +21,14 @@ export function setAuth (token, user, remember) {
   other.removeItem('user')
 }
 
+// Actualiza el usuario guardado (ej. tras editar nombre/email en "Mi cuenta"),
+// sin tener que saber si se guardo con "recordarme" (localStorage) o no
+// (sessionStorage) - se actualiza el que efectivamente tenga el token.
+export function updateStoredUser (user) {
+  const target = localStorage.getItem('token') ? localStorage : sessionStorage
+  target.setItem('user', JSON.stringify(user))
+}
+
 export function clearAuth () {
   localStorage.removeItem('token')
   localStorage.removeItem('user')

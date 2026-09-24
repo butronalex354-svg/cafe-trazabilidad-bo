@@ -47,6 +47,21 @@ export const useMonitoreoStore = defineStore('monitoreo', {
       return data
     },
 
+    async actualizarObservacion (id, { fecha, nota, foto }) {
+      const formData = new FormData()
+      formData.append('_method', 'PUT') // PHP no lee archivos en peticiones PUT: se "disfraza" de POST
+      formData.append('fecha', fecha)
+      formData.append('nota', nota)
+      if (foto) formData.append('foto', foto)
+
+      const { data } = await api.post(`/observaciones/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      const indice = this.observaciones.findIndex(o => o.id === id)
+      if (indice !== -1) this.observaciones[indice] = data
+      return data
+    },
+
     async eliminarObservacion (id) {
       await api.delete(`/observaciones/${id}`)
       this.observaciones = this.observaciones.filter(o => o.id !== id)

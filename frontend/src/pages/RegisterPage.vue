@@ -154,12 +154,14 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/auth'
 import logoCafeAndino from '@/assets/logo-cafe-andino.png'
 import AnimatedCafeBackground from '@/components/AnimatedCafeBackground.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
+const $q = useQuasar()
 
 const nombre = ref('')
 const email = ref('')
@@ -181,13 +183,14 @@ async function onSubmit () {
   }
   cargando.value = true
   try {
-    const user = await auth.register(nombre.value, email.value, password.value, passwordConfirmation.value, {
+    const mensaje = await auth.register(nombre.value, email.value, password.value, passwordConfirmation.value, {
       ci: ci.value,
       telefono: telefono.value,
       whatsapp: whatsapp.value,
       direccion: direccion.value
     })
-    router.push(`/${user.rol}`)
+    $q.notify({ message: mensaje || 'Cuenta creada. Espera la aprobación de un administrador.', color: 'positive', icon: 'check_circle', timeout: 6000 })
+    router.push('/login')
   } catch (err) {
     errorMsg.value = err.response?.data?.message || 'No se pudo crear la cuenta.'
   } finally {

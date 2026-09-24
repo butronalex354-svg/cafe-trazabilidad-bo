@@ -1,0 +1,11 @@
+{
+  "exactitud_validacion": 80.87,
+  "perdida_validacion": 0.5077,
+  "clases": [
+    "enfermedad",
+    "no_es_cafe",
+    "plaga",
+    "sana"
+  ],
+  "total_imagenes_entrenamiento": null
+}

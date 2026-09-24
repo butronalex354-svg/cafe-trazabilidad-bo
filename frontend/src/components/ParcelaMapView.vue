@@ -61,6 +61,13 @@ onMounted(() => {
   // se observa el tamaño real del contenedor y se corrige cada vez que cambia.
   resizeObserver = new ResizeObserver(() => map && map.invalidateSize())
   resizeObserver.observe(mapEl.value)
+
+  // Ademas: si la pagina tiene una animacion de entrada (transform) al
+  // cargar, Leaflet puede dibujar mal algunos "tiles" de las esquinas
+  // aunque el contenedor no haya cambiado de tamaño (el ResizeObserver no
+  // detecta eso). Se refuerza con un par de redibujados forzados al toque.
+  setTimeout(() => map && map.invalidateSize(), 300)
+  setTimeout(() => map && map.invalidateSize(), 800)
 })
 
 onBeforeUnmount(() => {
