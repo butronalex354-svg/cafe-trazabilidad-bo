@@ -90,22 +90,74 @@
           <q-item-section>
             <q-item-label>{{ i.cosecha.variedad_cafe }} · {{ i.cosecha.codigo_trazabilidad }}</q-item-label>
             <q-item-label caption>{{ i.cosecha.parcela?.nombre_parcela }} · {{ i.cantidad_disponible }} kg disponibles</q-item-label>
+            <q-item-label v-if="i.stock_minimo !== null" caption class="text-grey-7">
+              Stock mínimo: {{ i.stock_minimo }} kg
+              <template v-if="i.stock_maximo !== null"> · máximo: {{ i.stock_maximo }} kg</template>
+            </q-item-label>
+            <q-item-label v-if="i.estado !== 'exportado' && i.stock_minimo !== null && Number(i.cantidad_disponible) < Number(i.stock_minimo)" caption class="text-negative">
+              Stock por debajo del mínimo definido.
+            </q-item-label>
           </q-item-section>
           <q-item-section side>
-            <q-select
-              :model-value="i.estado"
-              :options="opcionesEstadoFormulario"
-              emit-value
-              map-options
-              dense
-              outlined
-              style="min-width: 150px"
-              @update:model-value="(nuevoEstado) => cambiarEstado(i, nuevoEstado)"
-            />
+            <div class="column items-end q-gutter-xs">
+              <q-badge v-if="i.estado === 'exportado'" color="brown-8" label="Exportado (autorizado por el Administrador)" />
+              <q-select
+                v-else
+                :model-value="i.estado"
+                :options="opcionesEstadoFormulario"
+                emit-value
+                map-options
+                dense
+                outlined
+                style="min-width: 150px"
+                @update:model-value="(nuevoEstado) => cambiarEstado(i, nuevoEstado)"
+              />
+              <div v-if="i.estado !== 'exportado'" class="row q-gutter-xs">
+                <q-btn dense flat no-caps size="sm" icon="tune" label="Límites" color="brown-7" @click="abrirLimites(i)" />
+                <q-btn dense flat no-caps size="sm" icon="remove_shopping_cart" label="Salida" color="brown-7" @click="abrirSalida(i)" />
+              </div>
+            </div>
           </q-item-section>
         </q-item>
       </q-list>
     </template>
+
+    <!-- Dialogo: definir stock minimo/maximo -->
+    <q-dialog v-model="dlgLimites">
+      <q-card class="caja-tema" style="min-width: 300px; max-width: 380px; width: 100%">
+        <q-card-section>
+          <div class="text-h6 text-brown-9">Stock mínimo y máximo</div>
+          <div class="text-caption text-grey-7">{{ itemActual?.cosecha.codigo_trazabilidad }}</div>
+        </q-card-section>
+        <q-card-section class="q-gutter-sm">
+          <q-input v-model.number="formLimites.stockMinimo" type="number" step="0.01" label="Stock mínimo (kg)" dense outlined hint="Debajo de este valor se genera una alerta" />
+          <q-input v-model.number="formLimites.stockMaximo" type="number" step="0.01" label="Stock máximo (kg)" dense outlined />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="grey-8" no-caps v-close-popup />
+          <q-btn unelevated color="brown-8" label="Guardar" no-caps :loading="guardandoLimites" @click="guardarLimites" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Dialogo: registrar salida de almacen -->
+    <q-dialog v-model="dlgSalida">
+      <q-card class="caja-tema" style="min-width: 300px; max-width: 380px; width: 100%">
+        <q-card-section>
+          <div class="text-h6 text-brown-9">Registrar salida de almacén</div>
+          <div class="text-caption text-grey-7">
+            {{ itemActual?.cosecha.codigo_trazabilidad }} · {{ itemActual?.cantidad_disponible }} kg disponibles
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <q-input v-model.number="cantidadSalida" type="number" step="0.01" label="Cantidad que sale (kg)" dense outlined autofocus />
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="grey-8" no-caps v-close-popup />
+          <q-btn unelevated color="brown-8" label="Registrar" no-caps :loading="guardandoSalida" @click="guardarSalida" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -135,10 +187,11 @@ const opcionesEstado = [
   { label: 'Exportado', value: 'exportado' }
 ]
 
+// "Exportado" ya no es seleccionable aca: esa transicion ahora es exclusiva
+// del Administrador (RF23), despues de que el Verificador aprobo el lote.
 const opcionesEstadoFormulario = [
   { label: 'En proceso', value: 'en_proceso' },
-  { label: 'Terminado', value: 'terminado' },
-  { label: 'Exportado', value: 'exportado' }
+  { label: 'Terminado', value: 'terminado' }
 ]
 
 const inventarioFiltrado = computed(() => {
@@ -168,6 +221,59 @@ async function cambiarEstado (item, nuevoEstado) {
     $q.notify({ type: 'positive', message: 'Estado del lote actualizado.' })
   } catch (err) {
     $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudo actualizar el estado.' })
+  }
+}
+
+// --- Stock minimo/maximo ---
+const dlgLimites = ref(false)
+const itemActual = ref(null)
+const formLimites = ref({ stockMinimo: null, stockMaximo: null })
+const guardandoLimites = ref(false)
+
+function abrirLimites (item) {
+  itemActual.value = item
+  formLimites.value = { stockMinimo: item.stock_minimo, stockMaximo: item.stock_maximo }
+  dlgLimites.value = true
+}
+
+async function guardarLimites () {
+  guardandoLimites.value = true
+  try {
+    await inventario.definirLimites(itemActual.value.id, formLimites.value)
+    $q.notify({ type: 'positive', message: 'Límites de stock actualizados.' })
+    dlgLimites.value = false
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudieron guardar los límites.' })
+  } finally {
+    guardandoLimites.value = false
+  }
+}
+
+// --- Salida de almacen ---
+const dlgSalida = ref(false)
+const cantidadSalida = ref(null)
+const guardandoSalida = ref(false)
+
+function abrirSalida (item) {
+  itemActual.value = item
+  cantidadSalida.value = null
+  dlgSalida.value = true
+}
+
+async function guardarSalida () {
+  if (!cantidadSalida.value || cantidadSalida.value <= 0) {
+    $q.notify({ type: 'negative', message: 'Ingresa una cantidad válida.' })
+    return
+  }
+  guardandoSalida.value = true
+  try {
+    await inventario.registrarSalida(itemActual.value.id, cantidadSalida.value)
+    $q.notify({ type: 'positive', message: 'Salida registrada.' })
+    dlgSalida.value = false
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudo registrar la salida.' })
+  } finally {
+    guardandoSalida.value = false
   }
 }
 

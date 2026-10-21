@@ -28,6 +28,11 @@ class User extends Authenticatable
         'password',
         'rol',
         'estado',
+        'notificar_plagas',
+        'notificar_stock',
+        'telefono',
+        'entidad_verificadora',
+        'acreditacion',
     ];
 
     /**
@@ -48,6 +53,8 @@ class User extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'notificar_plagas' => 'boolean',
+            'notificar_stock' => 'boolean',
         ];
     }
 

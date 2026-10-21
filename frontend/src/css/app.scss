@@ -99,6 +99,86 @@
   font-weight: 600;
 }
 
+// Selector de color nativo (pantalla "Color del sistema" del Administrador).
+.selector-color {
+  width: 72px;
+  height: 72px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+}
+.selector-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 50%;
+}
+.selector-color::-webkit-color-swatch {
+  border: 3px solid rgba(224, 168, 74, 0.5);
+  border-radius: 50%;
+}
+
+// ============================================================
+// MODO OSCURO
+// ------------------------------------------------------------
+// Se activa poniendo data-tema="oscuro" en <html> (ver MainLayout.vue).
+// Es una preferencia personal de CADA usuario (se guarda en su propio
+// navegador), a diferencia del "Color del sistema" de mas abajo, que es
+// una sola configuracion que define el Administrador para todos.
+// Como la mayoria de los componentes ya usa las clases de color propias
+// de Quasar (text-brown-9, bg-white, etc.) y no directamente las
+// variables de arriba, el modo oscuro se aplica sobrescribiendo esas
+// mismas clases con un selector mas especifico, en vez de tener que
+// editar cada pantalla por separado.
+// ============================================================
+html[data-tema="oscuro"] {
+  --color-texto-oscuro: #f0e6d8;
+  --color-texto-suave: #b9ad99;
+  --color-fondo-claro: #171210;
+  --color-fondo-tarjeta: #241c16;
+  --gradiente-fondo-pagina: linear-gradient(170deg, #1d1612 0%, #241a12 50%, #2a1e14 100%);
+
+  background: var(--color-fondo-claro);
+  color-scheme: dark;
+
+  body, #q-app, .q-layout, .q-page {
+    background: var(--color-fondo-claro);
+  }
+
+  .pagina-tema {
+    background: var(--gradiente-fondo-pagina);
+  }
+
+  .caja-tema {
+    background: linear-gradient(160deg, #2a2018 0%, #332717 100%) !important;
+    border-color: rgba(224, 168, 74, 0.25) !important;
+  }
+
+  .text-brown-9, .text-brown-8, .text-brown-7 {
+    color: #f0dfc0 !important;
+  }
+  .text-grey-7, .text-grey-8 {
+    color: #ab9f8c !important;
+  }
+
+  .bg-white, .bg-grey-1, .bg-grey-2 {
+    background: #2d2419 !important;
+  }
+  .q-field--outlined .q-field__control {
+    color: #f0e6d8;
+  }
+  .q-field__native, .q-field__input {
+    color: #f0e6d8 !important;
+  }
+
+  .stat-card {
+    background: linear-gradient(165deg, #2a2018 0%, #332717 100%) !important;
+  }
+  .stat-numero {
+    color: #f0dfc0 !important;
+  }
+}
+
 // Evita que aparezca una barra de scroll horizontal fea cuando algo se
 // desborda un poco del ancho de la pantalla (comun en ventanas muy angostas).
 // El contenido que de verdad necesita scroll horizontal propio (como una
@@ -107,4 +187,9 @@
 html, body, #q-app, .q-layout {
   overflow-x: hidden;
   max-width: 100vw;
+  // Sin esto, al deslizar con dos/tres dedos en el touchpad (izquierda o
+  // derecha), el navegador interpreta el "rebote" en el borde como el gesto
+  // de "ir atras/adelante" y muestra la flechita con un destello en blanco.
+  // Esto le dice al navegador que no haga esa navegacion dentro de la app.
+  overscroll-behavior-x: none;
 }

@@ -7,11 +7,16 @@ export const useAdministradorStore = defineStore('administrador', {
   state: () => ({
     usuarios: [],
     reportes: null,
+    auditoria: [],
+    lotesParaExportar: [],
+    reclamos: [],
+    resultadosBusqueda: [],
     cargando: false
   }),
 
   getters: {
-    cuentasPendientes: (state) => state.usuarios.filter(u => u.estado === 'pendiente')
+    cuentasPendientes: (state) => state.usuarios.filter(u => u.estado === 'pendiente'),
+    reclamosPendientes: (state) => state.reclamos.filter(r => r.estado === 'pendiente').length
   },
 
   actions: {
@@ -61,6 +66,53 @@ export const useAdministradorStore = defineStore('administrador', {
     async cargarReportes () {
       const { data } = await api.get('/administrador/reportes')
       this.reportes = data
+    },
+
+    async cargarAuditoria () {
+      const { data } = await api.get('/administrador/auditoria')
+      this.auditoria = data
+    },
+
+    async cargarLotesParaExportar () {
+      this.cargando = true
+      try {
+        const { data } = await api.get('/administrador/lotes-para-exportar')
+        this.lotesParaExportar = data
+      } finally {
+        this.cargando = false
+      }
+    },
+
+    async autorizarExportacion (cosechaId) {
+      const { data } = await api.put(`/administrador/lotes/${cosechaId}/autorizar-exportacion`)
+      this.lotesParaExportar = this.lotesParaExportar.filter(c => c.id !== cosechaId)
+      return data
+    },
+
+    async cargarReclamos (estado = null) {
+      this.cargando = true
+      try {
+        const { data } = await api.get('/administrador/reclamos', { params: estado ? { estado } : {} })
+        this.reclamos = data
+      } finally {
+        this.cargando = false
+      }
+    },
+
+    async atenderReclamo (id) {
+      const { data } = await api.put(`/administrador/reclamos/${id}/atender`)
+      const indice = this.reclamos.findIndex(r => r.id === id)
+      if (indice !== -1) this.reclamos[indice] = data.reclamo
+    },
+
+    async buscarLotes (filtros = {}) {
+      this.cargando = true
+      try {
+        const { data } = await api.get('/administrador/lotes/buscar', { params: filtros })
+        this.resultadosBusqueda = data
+      } finally {
+        this.cargando = false
+      }
     }
   }
 })

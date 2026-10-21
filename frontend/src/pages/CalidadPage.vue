@@ -106,7 +106,7 @@
         <q-inner-loading :showing="calidad.cargandoAlertas" />
 
         <div v-if="!calidad.cargandoAlertas && calidad.alertas.length === 0" class="text-grey-7 q-pa-md text-center caja-tema rounded-borders q-mb-lg">
-          Sin alertas por ahora — cuando la IA detecte una plaga o enfermedad, va a aparecer aquí.
+          Sin alertas por ahora — van a aparecer aquí cuando la IA detecte una plaga/enfermedad, o cuando un lote se quede sin stock suficiente.
         </div>
 
         <q-list v-else bordered separator class="rounded-borders caja-tema q-mb-lg">
@@ -118,11 +118,15 @@
             @click="abrirDetalleAlerta(a)"
           >
             <q-item-section avatar>
-              <q-icon :name="a.resuelta ? 'task_alt' : 'notifications_active'" :color="a.resuelta ? 'grey-6' : 'negative'" />
+              <q-icon
+                :name="a.resuelta ? 'task_alt' : (a.tipo === 'stock' ? 'inventory_2' : 'notifications_active')"
+                :color="a.resuelta ? 'grey-6' : 'negative'"
+              />
             </q-item-section>
             <q-item-section>
               <q-item-label :class="{ 'text-weight-bold': !a.resuelta }">{{ a.mensaje }}</q-item-label>
-              <q-item-label caption>{{ formatearFecha(a.fecha) }} · {{ a.diagnostico?.parcela?.nombre_parcela }}</q-item-label>
+              <q-item-label v-if="a.tipo === 'stock'" caption>{{ formatearFecha(a.fecha) }} · {{ a.inventario?.cosecha?.codigo_trazabilidad }}</q-item-label>
+              <q-item-label v-else caption>{{ formatearFecha(a.fecha) }} · {{ a.diagnostico?.parcela?.nombre_parcela }}</q-item-label>
             </q-item-section>
             <q-item-section side>
               <q-badge v-if="a.resuelta" color="positive" label="Resuelta" />
@@ -278,10 +282,30 @@
             <q-icon name="map" size="14px" /> {{ alertaSeleccionada.diagnostico.parcela?.nombre_parcela }}
             · {{ formatearFecha(alertaSeleccionada.diagnostico.fecha) }}
           </div>
-          <div class="text-body2 q-mt-sm">{{ alertaSeleccionada.mensaje }}</div>
+        </q-card-section>
+        <q-card-section v-else class="q-pt-none">
+          <q-icon name="inventory_2" size="32px" color="brown-6" />
+          <div class="text-caption text-grey-7 q-mt-xs">
+            Lote: {{ alertaSeleccionada.inventario?.cosecha?.codigo_trazabilidad }}
+            · {{ formatearFecha(alertaSeleccionada.fecha) }}
+          </div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          <div class="text-body2">{{ alertaSeleccionada.mensaje }}</div>
           <q-badge v-if="alertaSeleccionada.resuelta" color="positive" label="Ya marcada como resuelta" class="q-mt-sm" />
         </q-card-section>
         <q-card-actions align="right">
+          <q-btn
+            v-if="numeroWhatsappPropio"
+            flat
+            no-caps
+            color="positive"
+            icon="chat"
+            label="Enviarme por WhatsApp"
+            type="a"
+            :href="enlaceWhatsappAlerta(alertaSeleccionada)"
+            target="_blank"
+          />
           <q-btn
             v-if="!alertaSeleccionada.resuelta"
             unelevated
@@ -322,6 +346,16 @@ const calidad = useCalidadStore()
 const cargandoParcelas = ref(true)
 const parcelaSeleccionada = ref(null)
 const seccionAlertasRef = ref(null)
+
+// Compartir una alerta por WhatsApp (al propio numero del productor, para
+// que le llegue aunque no tenga la app abierta). Reusa el mismo patron de
+// enlace "wa.me" que ya usa la pagina publica de trazabilidad.
+const numeroWhatsappPropio = computed(() => produccion.perfil?.whatsapp?.replace(/\D/g, '') || null)
+
+function enlaceWhatsappAlerta (alerta) {
+  const texto = encodeURIComponent(`Café Trazabilidad - alerta: ${alerta.mensaje}`)
+  return `https://wa.me/591${numeroWhatsappPropio.value}?text=${texto}`
+}
 
 const opcionesParcela = computed(() =>
   produccion.parcelas.map(p => ({ label: p.nombre_parcela, value: p.id }))
@@ -570,6 +604,13 @@ onMounted(async () => {
   cargandoParcelas.value = true
   if (produccion.parcelas.length === 0) {
     await produccion.cargarParcelas()
+  }
+  if (!produccion.perfil) {
+    try {
+      await produccion.cargarPerfil()
+    } catch {
+      // si falla, el boton de WhatsApp simplemente no aparece (numeroWhatsappPropio queda null)
+    }
   }
   cargandoParcelas.value = false
   await calidad.cargarAlertas()

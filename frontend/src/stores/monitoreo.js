@@ -6,6 +6,8 @@ export const useMonitoreoStore = defineStore('monitoreo', {
   state: () => ({
     clima: null,
     cargandoClima: false,
+    recomendaciones: [],
+    cargandoRecomendaciones: false,
     observaciones: [],
     cargandoObservaciones: false
   }),
@@ -20,6 +22,20 @@ export const useMonitoreoStore = defineStore('monitoreo', {
         return data
       } finally {
         this.cargandoClima = false
+      }
+    },
+
+    // Recomendaciones de manejo del cultivo: combina suelo, clima y el
+    // ultimo diagnostico de IA de la parcela (ver RecomendacionController).
+    async cargarRecomendaciones (parcelaId) {
+      this.cargandoRecomendaciones = true
+      this.recomendaciones = []
+      try {
+        const { data } = await api.get(`/parcelas/${parcelaId}/recomendaciones`)
+        this.recomendaciones = data.recomendaciones
+        return data
+      } finally {
+        this.cargandoRecomendaciones = false
       }
     },
 

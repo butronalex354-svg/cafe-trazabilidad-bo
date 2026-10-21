@@ -55,6 +55,17 @@
                   @click="cambiarTamanoTexto(opcion.valor)"
                 >{{ opcion.label }}</div>
               </div>
+
+              <div class="text-caption text-grey-7 q-mb-sm q-mt-md">Apariencia</div>
+              <div class="selector-tamano">
+                <div
+                  v-for="opcion in opcionesTema"
+                  :key="opcion.valor"
+                  class="selector-tamano-opcion"
+                  :class="{ 'selector-tamano-opcion--activo': tema === opcion.valor }"
+                  @click="cambiarTema(opcion.valor)"
+                ><q-icon :name="opcion.icono" size="16px" class="q-mr-xs" />{{ opcion.label }}</div>
+              </div>
             </div>
 
             <q-separator />
@@ -64,9 +75,29 @@
                 <q-item-section avatar><q-icon name="person" color="brown-7" /></q-item-section>
                 <q-item-section>Mi cuenta</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup class="ajustes-item" @click="proximamente">
+              <q-item v-if="auth.rol === 'productor'" clickable v-close-popup class="ajustes-item" @click="abrirPreferencias">
                 <q-item-section avatar><q-icon name="notifications_active" color="brown-7" /></q-item-section>
                 <q-item-section>Preferencias de notificación</q-item-section>
+              </q-item>
+              <q-item v-if="auth.rol === 'administrador'" clickable v-close-popup class="ajustes-item" @click="abrirColorSistema">
+                <q-item-section avatar><q-icon name="palette" color="brown-7" /></q-item-section>
+                <q-item-section>Color del sistema</q-item-section>
+              </q-item>
+              <q-item v-if="auth.rol === 'administrador'" clickable v-close-popup class="ajustes-item" @click="router.push('/administrador/catalogos')">
+                <q-item-section avatar><q-icon name="menu_book" color="brown-7" /></q-item-section>
+                <q-item-section>Catálogos del sistema</q-item-section>
+              </q-item>
+              <q-item v-if="auth.rol === 'verificador'" clickable v-close-popup class="ajustes-item" @click="router.push('/verificador/historial')">
+                <q-item-section avatar><q-icon name="history" color="brown-7" /></q-item-section>
+                <q-item-section>Mi historial</q-item-section>
+              </q-item>
+              <q-item v-if="auth.rol === 'productor'" clickable v-close-popup class="ajustes-item" @click="router.push('/productor/historial')">
+                <q-item-section avatar><q-icon name="history" color="brown-7" /></q-item-section>
+                <q-item-section>Historial de verificaciones</q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup class="ajustes-item" @click="dlgAyuda = true">
+                <q-item-section avatar><q-icon name="help" color="brown-7" /></q-item-section>
+                <q-item-section>Ayuda y soporte</q-item-section>
               </q-item>
             </q-list>
 
@@ -154,7 +185,15 @@
         <q-card-section class="q-gutter-md">
           <q-input v-model="formCuenta.nombre" label="Nombre" outlined dense bg-color="white" />
           <q-input v-model="formCuenta.email" label="Email" type="email" outlined dense bg-color="white" />
+          <q-input v-model="formCuenta.telefono" label="Teléfono" outlined dense bg-color="white" />
           <q-input :model-value="etiquetaRol" label="Rol" outlined dense readonly bg-color="grey-2" />
+
+          <template v-if="auth.rol === 'verificador'">
+            <q-separator />
+            <div class="text-subtitle2 text-brown-9">Datos de verificación</div>
+            <q-input v-model="formCuenta.entidadVerificadora" label="Entidad / institución" outlined dense bg-color="white" />
+            <q-input v-model="formCuenta.acreditacion" label="N° de acreditación" outlined dense bg-color="white" />
+          </template>
         </q-card-section>
 
         <q-card-actions align="right" class="q-px-md">
@@ -178,6 +217,66 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Preferencias de notificacion (solo Productor: que tipos de alerta ver) -->
+    <q-dialog v-model="dlgPreferencias">
+      <q-card class="caja-tema" style="min-width: 300px; max-width: 400px; width: 100%">
+        <q-card-section>
+          <div class="text-h6 text-brown-9">Preferencias de notificación</div>
+          <div class="text-caption text-grey-7">Elegí qué tipos de alerta querés ver en tu bandeja</div>
+        </q-card-section>
+        <q-card-section class="q-gutter-md">
+          <q-toggle v-model="formPreferencias.notificarPlagas" label="Alertas de plagas y enfermedades (IA)" color="brown-8" />
+          <q-toggle v-model="formPreferencias.notificarStock" label="Alertas de stock bajo en inventario" color="brown-8" />
+        </q-card-section>
+        <q-card-actions align="right" class="q-px-md q-pb-md">
+          <q-btn flat label="Cerrar" color="grey-8" no-caps v-close-popup />
+          <q-btn unelevated color="brown-8" label="Guardar" no-caps :loading="guardandoPreferencias" @click="guardarPreferencias" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Color del sistema (solo Administrador: afecta a todos los usuarios) -->
+    <q-dialog v-model="dlgColorSistema">
+      <q-card class="caja-tema" style="min-width: 300px; max-width: 400px; width: 100%">
+        <q-card-section>
+          <div class="text-h6 text-brown-9">Color del sistema</div>
+          <div class="text-caption text-grey-7">Este color se aplica para todos los usuarios del sistema</div>
+        </q-card-section>
+        <q-card-section class="text-center">
+          <input type="color" v-model="colorSistema" class="selector-color" />
+          <div class="text-caption text-grey-7 q-mt-sm">{{ colorSistema }}</div>
+        </q-card-section>
+        <q-card-actions align="right" class="q-px-md q-pb-md">
+          <q-btn flat label="Restablecer" color="grey-8" no-caps @click="restablecerColorSistema" />
+          <q-btn unelevated color="brown-8" label="Guardar" no-caps :loading="guardandoColor" @click="guardarColorSistema" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Ayuda y soporte: contenido distinto segun el rol -->
+    <q-dialog v-model="dlgAyuda">
+      <q-card class="caja-tema" style="min-width: 300px; max-width: 460px; width: 100%">
+        <q-card-section>
+          <div class="text-h6 text-brown-9">Ayuda y soporte</div>
+          <div class="text-caption text-grey-7">{{ etiquetaRol }}</div>
+        </q-card-section>
+        <q-card-section>
+          <q-list>
+            <q-item v-for="(item, idx) in ayudaRol" :key="idx">
+              <q-item-section avatar><q-icon :name="item.icono" color="brown-7" /></q-item-section>
+              <q-item-section>
+                <q-item-label class="text-weight-medium">{{ item.titulo }}</q-item-label>
+                <q-item-label caption>{{ item.texto }}</q-item-label>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+        <q-card-actions align="right" class="q-px-md q-pb-md">
+          <q-btn flat label="Cerrar" color="grey-8" no-caps v-close-popup />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-layout>
 </template>
 
@@ -187,11 +286,16 @@ import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/auth'
 import { useCalidadStore } from '@/stores/calidad'
+import { useVerificacionStore } from '@/stores/verificacion'
+import { useAdministradorStore } from '@/stores/administrador'
+import { api } from '@/boot/axios'
 import logoCafeAndino from '@/assets/logo-cafe-andino-badge.png'
 import logoCompleto from '@/assets/logo-cafe-andino.png'
 
 const auth = useAuthStore()
 const calidad = useCalidadStore()
+const verificacion = useVerificacionStore()
+const admin = useAdministradorStore()
 const route = useRoute()
 const router = useRouter()
 const $q = useQuasar()
@@ -222,6 +326,28 @@ function cambiarTamanoTexto (valor) {
 }
 
 aplicarTamanoTexto(tamanoTexto.value)
+
+// Modo claro/oscuro: preferencia personal de este navegador (a diferencia
+// del "Color del sistema", que es una config unica que pone el Administrador
+// para todos). Se aplica con un atributo en <html> para que el CSS de
+// app.scss lo pueda sobreescribir todo junto.
+const opcionesTema = [
+  { label: 'Claro', valor: 'claro', icono: 'light_mode' },
+  { label: 'Oscuro', valor: 'oscuro', icono: 'dark_mode' }
+]
+const tema = ref(localStorage.getItem('tema') || 'claro')
+
+function aplicarTema (valor) {
+  document.documentElement.setAttribute('data-tema', valor)
+}
+
+function cambiarTema (valor) {
+  tema.value = valor
+  localStorage.setItem('tema', valor)
+  aplicarTema(valor)
+}
+
+aplicarTema(tema.value)
 
 // Arranca en false: en pantalla angosta no se quiere tapar el contenido con
 // el overlay del menu apenas se carga la pagina. En pantalla ancha da igual
@@ -266,9 +392,19 @@ const itemsMenu = computed(() => {
   if (auth.rol === 'administrador') {
     return [
       { label: 'Panel', detalle: 'Usuarios y reportes', icono: 'dashboard', ruta: '/administrador' },
-      { label: 'Reclamos', detalle: 'Reclamos de compradores', icono: 'support_agent' },
-      { label: 'Exportación', detalle: 'Autorizar lotes verificados', icono: 'local_shipping' },
-      { label: 'Auditoría', detalle: 'Historial de cambios', icono: 'history' }
+      { label: 'Buscar lotes', detalle: 'Búsqueda general', icono: 'travel_explore', ruta: '/administrador/buscar' },
+      { label: 'Reclamos', detalle: 'Reclamos de compradores', icono: 'support_agent', ruta: '/administrador/reclamos', badge: admin.reclamosPendientes || null },
+      { label: 'Exportación', detalle: 'Autorizar lotes verificados', icono: 'local_shipping', ruta: '/administrador/exportacion', badge: admin.lotesParaExportar.length || null },
+      { label: 'Auditoría', detalle: 'Historial de cambios', icono: 'history', ruta: '/administrador/auditoria' }
+    ]
+  }
+  if (auth.rol === 'verificador') {
+    return [
+      { label: 'Todas', detalle: 'Todas las solicitudes', icono: 'list_alt', ruta: '/verificador' },
+      { label: 'Pendientes', detalle: 'Por revisar', icono: 'schedule', ruta: '/verificador/pendientes', badge: verificacion.pendientes || null },
+      { label: 'Observados', detalle: 'Con correcciones pedidas', icono: 'visibility', ruta: '/verificador/observados' },
+      { label: 'Verificados', detalle: 'Ya aprobados', icono: 'check_circle', ruta: '/verificador/verificados' },
+      { label: 'Rechazados', detalle: 'No aprobados', icono: 'cancel', ruta: '/verificador/rechazados' }
     ]
   }
   if (auth.rol !== 'productor') {
@@ -296,6 +432,13 @@ const notificaciones = ref([
 onMounted(() => {
   if (auth.rol === 'productor') {
     calidad.cargarAlertas()
+  }
+  if (auth.rol === 'verificador') {
+    verificacion.cargarContadorPendientes()
+  }
+  if (auth.rol === 'administrador') {
+    admin.cargarReclamos('pendiente')
+    admin.cargarLotesParaExportar()
   }
 })
 
@@ -352,13 +495,19 @@ function proximamente () {
 // "Mi cuenta": nombre/email de la cuenta de acceso (auth.user), y cambio de
 // contraseña. Es un dato distinto del "registro de productor" (Parcelas).
 const dlgCuenta = ref(false)
-const formCuenta = ref({ nombre: '', email: '' })
+const formCuenta = ref({ nombre: '', email: '', telefono: '', entidadVerificadora: '', acreditacion: '' })
 const formPassword = ref({ actual: '', nueva: '', confirmacion: '' })
 const guardandoCuenta = ref(false)
 const cambiandoPassword = ref(false)
 
 function abrirMiCuenta () {
-  formCuenta.value = { nombre: auth.user?.nombre || '', email: auth.user?.email || '' }
+  formCuenta.value = {
+    nombre: auth.user?.nombre || '',
+    email: auth.user?.email || '',
+    telefono: auth.user?.telefono || '',
+    entidadVerificadora: auth.user?.entidad_verificadora || '',
+    acreditacion: auth.user?.acreditacion || ''
+  }
   formPassword.value = { actual: '', nueva: '', confirmacion: '' }
   dlgCuenta.value = true
 }
@@ -370,7 +519,11 @@ async function guardarCuenta () {
   }
   guardandoCuenta.value = true
   try {
-    await auth.actualizarCuenta(formCuenta.value.nombre, formCuenta.value.email)
+    await auth.actualizarCuenta(formCuenta.value.nombre, formCuenta.value.email, {
+      telefono: formCuenta.value.telefono,
+      entidad_verificadora: formCuenta.value.entidadVerificadora,
+      acreditacion: formCuenta.value.acreditacion
+    })
     $q.notify({ type: 'positive', message: 'Cuenta actualizada.' })
   } catch (err) {
     $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudo actualizar la cuenta.' })
@@ -405,6 +558,115 @@ async function cerrarSesion () {
   await auth.logout()
   router.push('/login')
 }
+
+// --- Preferencias de notificacion (solo Productor) ---
+const dlgPreferencias = ref(false)
+const guardandoPreferencias = ref(false)
+const formPreferencias = ref({ notificarPlagas: true, notificarStock: true })
+
+function abrirPreferencias () {
+  formPreferencias.value = {
+    notificarPlagas: auth.user?.notificar_plagas ?? true,
+    notificarStock: auth.user?.notificar_stock ?? true
+  }
+  dlgPreferencias.value = true
+}
+
+async function guardarPreferencias () {
+  guardandoPreferencias.value = true
+  try {
+    await auth.actualizarPreferencias(formPreferencias.value.notificarPlagas, formPreferencias.value.notificarStock)
+    $q.notify({ type: 'positive', message: 'Preferencias actualizadas.' })
+    dlgPreferencias.value = false
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudieron guardar las preferencias.' })
+  } finally {
+    guardandoPreferencias.value = false
+  }
+}
+
+// --- Color del sistema (solo Administrador, afecta a todos) ---
+const dlgColorSistema = ref(false)
+const guardandoColor = ref(false)
+const colorSistema = ref('#e0a84a')
+const COLOR_POR_DEFECTO = '#e0a84a'
+
+function aplicarColorSistema (hex) {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  const oscurecer = (factor) => {
+    const rO = Math.round(r * factor)
+    const gO = Math.round(g * factor)
+    const bO = Math.round(b * factor)
+    return `#${rO.toString(16).padStart(2, '0')}${gO.toString(16).padStart(2, '0')}${bO.toString(16).padStart(2, '0')}`
+  }
+  const raiz = document.documentElement.style
+  raiz.setProperty('--color-primario', hex)
+  raiz.setProperty('--color-secundario', oscurecer(0.78))
+  raiz.setProperty('--color-primario-oscuro', oscurecer(0.5))
+  raiz.setProperty('--color-acento', hex)
+}
+
+async function cargarColorSistema () {
+  try {
+    const { data } = await api.get('/configuracion')
+    colorSistema.value = data.color_primario
+    aplicarColorSistema(data.color_primario)
+  } catch {
+    // si falla, se queda con el color por defecto del CSS
+  }
+}
+
+function abrirColorSistema () {
+  dlgColorSistema.value = true
+}
+
+async function guardarColorSistema () {
+  guardandoColor.value = true
+  try {
+    await api.put('/configuracion', { color_primario: colorSistema.value })
+    aplicarColorSistema(colorSistema.value)
+    $q.notify({ type: 'positive', message: 'Color del sistema actualizado para todos los usuarios.' })
+    dlgColorSistema.value = false
+  } catch (err) {
+    $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudo guardar el color.' })
+  } finally {
+    guardandoColor.value = false
+  }
+}
+
+async function restablecerColorSistema () {
+  colorSistema.value = COLOR_POR_DEFECTO
+  await guardarColorSistema()
+}
+
+cargarColorSistema()
+
+// --- Ayuda y soporte (contenido distinto por rol) ---
+const dlgAyuda = ref(false)
+const ayudaPorRol = {
+  productor: [
+    { icono: 'map', titulo: 'Registrar una parcela', texto: 'Andá a "Parcelas" → "Nueva parcela", marcá la ubicación en el mapa y completá el tamaño y tipo de suelo.' },
+    { icono: 'agriculture', titulo: 'Registrar una cosecha', texto: 'En "Producción" → "Registrar cosecha". Se genera un código de lote único automáticamente.' },
+    { icono: 'eco', titulo: 'Diagnóstico de plagas', texto: 'En "Calidad" subí una foto de la hoja o el fruto, la IA te dice si hay signos de enfermedad.' },
+    { icono: 'verified', titulo: 'Solicitar verificación', texto: 'En "Producción", cada lote tiene un botón "Solicitar verificación" para que el Verificador lo revise.' },
+    { icono: 'support_agent', titulo: '¿Problemas?', texto: 'Contactá al administrador del sistema desde tu institución o asociación cafetalera.' }
+  ],
+  verificador: [
+    { icono: 'inbox', titulo: 'Bandeja de solicitudes', texto: 'En el menú lateral, "Pendientes" muestra los lotes que los productores enviaron a revisión.' },
+    { icono: 'visibility', titulo: 'Revisar un lote', texto: 'Hacé clic en "Revisar" para ver el mapa de la parcela, el procesamiento y los controles de calidad antes de decidir.' },
+    { icono: 'rule', titulo: 'Resolver una solicitud', texto: 'Elegí "Verificado", "Observado" (si falta corregir algo) o "Rechazado", y dejá una observación si corresponde.' },
+    { icono: 'history', titulo: 'Mi historial', texto: 'En este menú de ajustes podés ver todas las verificaciones que vos mismo resolviste.' }
+  ],
+  administrador: [
+    { icono: 'person_add', titulo: 'Aprobar cuentas nuevas', texto: 'En el Panel, las cuentas de productores recién registrados aparecen como "Pendientes" hasta que las apruebes.' },
+    { icono: 'group_add', titulo: 'Crear Verificador/Administrador', texto: 'Esos 2 roles no se auto-registran: los creás vos mismo desde el Panel, botón "Crear cuenta".' },
+    { icono: 'local_shipping', titulo: 'Autorizar exportación', texto: 'Un lote aparece en "Exportación" recién cuando el Verificador ya lo marcó como "Verificado".' },
+    { icono: 'history', titulo: 'Auditoría', texto: 'Revisá el historial completo de cambios de cuentas y acciones del sistema en "Auditoría".' }
+  ]
+}
+const ayudaRol = computed(() => ayudaPorRol[auth.rol] || [])
 </script>
 
 <style scoped>

@@ -74,6 +74,18 @@
           </div>
         </div>
 
+        <div v-if="monitoreo.recomendaciones.length > 0" class="q-mb-lg">
+          <div class="text-h6 text-brown-8 q-mb-sm">Recomendaciones para tu parcela</div>
+          <q-list bordered separator class="rounded-borders caja-tema">
+            <q-item v-for="(rec, i) in monitoreo.recomendaciones" :key="i">
+              <q-item-section avatar>
+                <q-icon :name="iconoRecomendacion(rec.tipo)" :color="colorRecomendacion(rec.tipo)" />
+              </q-item-section>
+              <q-item-section>{{ rec.mensaje }}</q-item-section>
+            </q-item>
+          </q-list>
+        </div>
+
         <div class="row items-center justify-between q-mb-sm">
           <div class="text-h6 text-brown-8">Observaciones del cultivo</div>
           <q-btn unelevated color="brown-8" icon="add_a_photo" label="Nueva observación" @click="abrirNuevaObservacion" />
@@ -276,6 +288,11 @@ async function cargarTodoDeParcela (parcelaId) {
   } catch (err) {
     errorClima.value = err.response?.data?.message || 'No se pudo consultar el clima de esta parcela.'
   }
+  try {
+    await monitoreo.cargarRecomendaciones(parcelaId)
+  } catch {
+    // si fallan las recomendaciones no es critico, el clima y las observaciones igual se muestran
+  }
   await monitoreo.cargarObservaciones(parcelaId)
 }
 
@@ -305,6 +322,18 @@ function claseClima (probabilidadLluvia) {
   if (probabilidadLluvia >= 60) return 'clima-lluvia'
   if (probabilidadLluvia >= 30) return 'clima-nube'
   return 'clima-sol'
+}
+
+function iconoRecomendacion (tipo) {
+  if (tipo === 'clima') return 'water_drop'
+  if (tipo === 'plaga') return 'bug_report'
+  return 'eco' // suelo
+}
+
+function colorRecomendacion (tipo) {
+  if (tipo === 'clima') return 'blue-7'
+  if (tipo === 'plaga') return 'deep-orange-7'
+  return 'green-8' // suelo
 }
 
 function formatearFecha (fecha) {
@@ -556,10 +585,12 @@ onUnmounted(() => {
 
 /* En compu las tarjetas se reparten parejas en una sola fila (sin importar
    si son 5 o 7 dias). En celular no caben todas parejas, asi que en vez de
-   amontonarse en filas desiguales, se desliza en horizontal (como el
-   pronostico de clima de un celular normal). */
+   deslizarse en horizontal (eso hacia aparecer la pildora de scroll con
+   flechitas, que no se veia bien), se acomodan en varias filas sin scroll. */
 .fila-pronostico {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
 }
 @media (min-width: 600px) {
@@ -572,11 +603,6 @@ onUnmounted(() => {
   }
 }
 @media (max-width: 599px) {
-  .fila-pronostico {
-    overflow-x: auto;
-    padding-bottom: 4px;
-    scrollbar-width: thin;
-  }
   .fila-pronostico .pronostico-dia {
     flex: 0 0 auto;
     width: 96px;

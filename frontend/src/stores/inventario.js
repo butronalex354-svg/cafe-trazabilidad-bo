@@ -28,6 +28,20 @@ export const useInventarioStore = defineStore('inventario', {
       const indice = this.inventario.findIndex(i => i.id === id)
       if (indice !== -1) this.inventario[indice] = data
       return data
+    },
+
+    async definirLimites (id, { stockMinimo, stockMaximo }) {
+      const { data } = await api.put(`/inventario/${id}/limites`, { stock_minimo: stockMinimo, stock_maximo: stockMaximo })
+      const indice = this.inventario.findIndex(i => i.id === id)
+      if (indice !== -1) this.inventario[indice] = data
+      return data
+    },
+
+    async registrarSalida (id, cantidad) {
+      const { data } = await api.post(`/inventario/${id}/salida`, { cantidad })
+      const indice = this.inventario.findIndex(i => i.id === id)
+      if (indice !== -1) this.inventario[indice] = data
+      return data
     }
   }
 })

@@ -113,6 +113,11 @@ class AuthController extends Controller
                 'nombre' => $user->nombre,
                 'email' => $user->email,
                 'rol' => $user->rol,
+                'notificar_plagas' => $user->notificar_plagas,
+                'notificar_stock' => $user->notificar_stock,
+                'telefono' => $user->telefono,
+                'entidad_verificadora' => $user->entidad_verificadora,
+                'acreditacion' => $user->acreditacion,
             ],
         ]);
     }
@@ -138,9 +143,10 @@ class AuthController extends Controller
     }
 
     /**
-     * Actualiza el nombre/email de la cuenta autenticada (nombre que se ve
-     * en el header/menu, distinto del "nombre completo" del registro de
-     * Productor que se edita en Parcelas).
+     * Actualiza el nombre/email/telefono de la cuenta autenticada (nombre
+     * que se ve en el header/menu, distinto del "nombre completo" del
+     * registro de Productor que se edita en Parcelas). El Verificador ademas
+     * puede guardar su entidad y numero de acreditacion.
      */
     public function actualizarCuenta(Request $request)
     {
@@ -149,6 +155,49 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:150',
             'email' => 'required|email|max:150|unique:usuario,email,' . $usuario->id,
+            'telefono' => 'nullable|string|max:20',
+            'entidad_verificadora' => 'nullable|string|max:150',
+            'acreditacion' => 'nullable|string|max:100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Datos invalidos.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $datos = [
+            'nombre' => $request->nombre,
+            'email' => $request->email,
+            'telefono' => $request->input('telefono'),
+        ];
+
+        // Los campos de acreditacion solo tienen sentido para el Verificador;
+        // se ignoran si los manda otro rol, para no guardar datos sin sentido.
+        if ($usuario->rol === 'verificador') {
+            $datos['entidad_verificadora'] = $request->input('entidad_verificadora');
+            $datos['acreditacion'] = $request->input('acreditacion');
+        }
+
+        $usuario->update($datos);
+
+        \App\Models\Auditoria::registrar($usuario->id, $usuario->id, 'editar_cuenta', "Editó sus propios datos de cuenta.");
+
+        return response()->json(['message' => 'Cuenta actualizada.', 'user' => $usuario]);
+    }
+
+    /**
+     * Preferencias de notificacion: que tipos de alerta quiere ver el
+     * usuario autenticado (hoy aplica al Productor: plagas y stock bajo).
+     */
+    public function actualizarPreferencias(Request $request)
+    {
+        $usuario = $request->user();
+
+        $validator = Validator::make($request->all(), [
+            'notificar_plagas' => 'required|boolean',
+            'notificar_stock' => 'required|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -159,11 +208,11 @@ class AuthController extends Controller
         }
 
         $usuario->update([
-            'nombre' => $request->nombre,
-            'email' => $request->email,
+            'notificar_plagas' => $request->boolean('notificar_plagas'),
+            'notificar_stock' => $request->boolean('notificar_stock'),
         ]);
 
-        return response()->json(['message' => 'Cuenta actualizada.', 'user' => $usuario]);
+        return response()->json(['message' => 'Preferencias actualizadas.', 'user' => $usuario]);
     }
 
     /**

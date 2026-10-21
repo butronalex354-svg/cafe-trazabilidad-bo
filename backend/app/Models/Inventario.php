@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Inventario extends Model
 {
@@ -14,6 +15,8 @@ class Inventario extends Model
     protected $fillable = [
         'cosecha_id',
         'cantidad_disponible',
+        'stock_minimo',
+        'stock_maximo',
         'estado',
         'fecha_actualizacion',
     ];
@@ -21,5 +24,10 @@ class Inventario extends Model
     public function cosecha(): BelongsTo
     {
         return $this->belongsTo(Cosecha::class, 'cosecha_id');
+    }
+
+    public function alertas(): HasMany
+    {
+        return $this->hasMany(Alerta::class, 'inventario_id');
     }
 }

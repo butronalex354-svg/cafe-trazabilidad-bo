@@ -38,8 +38,18 @@ export const useAuthStore = defineStore('auth', {
       return data.message
     },
 
-    async actualizarCuenta (nombre, email) {
-      const { data } = await api.put('/me', { nombre, email })
+    async actualizarCuenta (nombre, email, datosExtra = {}) {
+      const { data } = await api.put('/me', { nombre, email, ...datosExtra })
+      this.user = data.user
+      updateStoredUser(data.user)
+      return data.user
+    },
+
+    async actualizarPreferencias (notificarPlagas, notificarStock) {
+      const { data } = await api.put('/me/preferencias', {
+        notificar_plagas: notificarPlagas,
+        notificar_stock: notificarStock
+      })
       this.user = data.user
       updateStoredUser(data.user)
       return data.user

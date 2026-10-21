@@ -83,6 +83,13 @@ export const useProduccionStore = defineStore('produccion', {
       return data
     },
 
+    async solicitarVerificacion (id) {
+      const { data } = await api.post(`/cosechas/${id}/solicitar-verificacion`)
+      const idx = this.cosechas.findIndex(c => c.id === id)
+      if (idx !== -1) this.cosechas[idx].verificacion = data.verificacion
+      return data
+    },
+
     async eliminarCosecha (id) {
       const cosecha = this.cosechas.find(c => c.id === id)
       await api.delete(`/cosechas/${id}`)

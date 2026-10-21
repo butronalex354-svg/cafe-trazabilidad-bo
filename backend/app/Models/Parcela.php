@@ -21,11 +21,20 @@ class Parcela extends Model
         'ubicacion',
         'tipo_suelo',
         'tamano_terreno',
+        'ph_suelo',
+        'humedad_suelo',
+        'fertilidad',
+        'verificador_id',
     ];
 
     public function productor(): BelongsTo
     {
         return $this->belongsTo(Productor::class, 'productor_id');
+    }
+
+    public function verificador(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verificador_id');
     }
 
     public function cosechas(): HasMany

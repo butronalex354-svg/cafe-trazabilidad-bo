@@ -18,8 +18,12 @@ class AlertaController extends Controller
     {
         $productor = $this->productorAutenticado($request);
 
+        $usuario = $request->user();
+
         $alertas = Alerta::where('productor_id', $productor->id)
-            ->with('diagnostico.parcela:id,nombre_parcela')
+            ->when(! $usuario->notificar_plagas, fn ($q) => $q->where('tipo', '!=', 'plaga'))
+            ->when(! $usuario->notificar_stock, fn ($q) => $q->where('tipo', '!=', 'stock'))
+            ->with(['diagnostico.parcela:id,nombre_parcela', 'inventario.cosecha:id,parcela_id,codigo_trazabilidad', 'parcela:id,nombre_parcela'])
             ->orderByDesc('fecha')
             ->orderByDesc('id')
             ->get();

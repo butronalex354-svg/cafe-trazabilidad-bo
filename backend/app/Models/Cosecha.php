@@ -23,6 +23,7 @@ class Cosecha extends Model
         'cantidad',
         'variedad_cafe',
         'codigo_trazabilidad',
+        'rendimiento_kg_ha',
     ];
 
     protected static function booted(): void
@@ -32,6 +33,13 @@ class Cosecha extends Model
         static::creating(function (Cosecha $cosecha) {
             if (empty($cosecha->codigo_trazabilidad)) {
                 $cosecha->codigo_trazabilidad = static::generarCodigoUnico();
+            }
+
+            // Rendimiento = cantidad cosechada (kg) / superficie de la parcela (ha),
+            // para evaluar la productividad del lote sin pedirselo al productor.
+            $parcela = $cosecha->parcela ?? Parcela::find($cosecha->parcela_id);
+            if ($parcela && $parcela->tamano_terreno > 0 && $cosecha->cantidad) {
+                $cosecha->rendimiento_kg_ha = round($cosecha->cantidad / $parcela->tamano_terreno, 2);
             }
         });
 
@@ -73,5 +81,15 @@ class Cosecha extends Model
     public function inventario(): HasOne
     {
         return $this->hasOne(Inventario::class, 'cosecha_id');
+    }
+
+    public function verificacion(): HasOne
+    {
+        return $this->hasOne(Verificacion::class, 'cosecha_id');
+    }
+
+    public function reclamos(): HasMany
+    {
+        return $this->hasMany(Reclamo::class, 'cosecha_id');
     }
 }

@@ -26,7 +26,7 @@ class CosechaController extends Controller
             ->when($request->filled('parcela_id'), function ($q) use ($request) {
                 $q->where('parcela_id', $request->integer('parcela_id'));
             })
-            ->with('parcela:id,nombre_parcela')
+            ->with(['parcela:id,nombre_parcela', 'verificacion'])
             ->orderByDesc('id')
             ->get();
 
