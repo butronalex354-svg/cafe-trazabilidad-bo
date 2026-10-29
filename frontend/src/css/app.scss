@@ -195,9 +195,47 @@ html[data-tema="oscuro"] {
   }
   .q-field--outlined .q-field__control {
     color: #f0e6d8;
+    // Sin esto, el borde (pensado para fondo claro: negro al 24%) casi no
+    // se distingue del fondo oscuro de la pagina -- un select/input se veia
+    // "flotando" sin caja, nada que lo distinga de ser clickeable.
+    background: rgba(255, 255, 255, 0.045);
+  }
+  .q-field--outlined .q-field__control:before {
+    border-color: rgba(224, 168, 74, 0.4) !important;
+  }
+  .q-field--outlined .q-field__control:hover:before {
+    border-color: rgba(224, 168, 74, 0.75) !important;
   }
   .q-field__native, .q-field__input {
     color: #f0e6d8 !important;
+  }
+  .q-field__native::placeholder, .q-field__input::placeholder {
+    color: #8a7a62 !important;
+  }
+  // La etiqueta ("Parcela", "Lote", etc.) y los iconos chicos del campo
+  // (flecha del select, calendario...) tambien vienen en negro por defecto.
+  .q-field__label, .q-field__marginal, .q-field__bottom {
+    color: #c9b79a !important;
+  }
+
+  // Las tablas (q-table) traen su propia tarjeta, con fondo blanco Y texto
+  // negro fijo (no heredado) -- por eso no alcanzaba con el color de texto
+  // general de mas arriba.
+  .q-table__card {
+    background: linear-gradient(160deg, #2a2018 0%, #332717 100%) !important;
+    color: #f0e6d8 !important;
+  }
+  .q-table th {
+    color: #c9b79a !important;
+  }
+  .q-table tbody tr:hover {
+    background: rgba(224, 168, 74, 0.08);
+  }
+  .q-table--bordered, .q-table__card.q-table--bordered {
+    border-color: rgba(224, 168, 74, 0.2) !important;
+  }
+  .q-table td, .q-table th {
+    border-color: rgba(224, 168, 74, 0.14) !important;
   }
 
   .stat-card {
