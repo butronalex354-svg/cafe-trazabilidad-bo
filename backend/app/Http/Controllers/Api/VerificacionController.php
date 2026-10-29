@@ -10,6 +10,7 @@ use App\Models\Parcela;
 use App\Models\Verificacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class VerificacionController extends Controller
 {
@@ -24,6 +25,19 @@ class VerificacionController extends Controller
      * justamente una invitacion a corregir y volver a intentar - si ambos
      * estados permitieran reenvio, dejarian de tener una diferencia real.
      */
+    #[OA\Post(
+        path: '/cosechas/{id}/solicitar-verificacion',
+        summary: 'El productor solicita verificación de su lote',
+        description: 'Un lote "observado" se puede reenviar (vuelve a pendiente). Un lote "rechazado" no se puede reenviar.',
+        tags: ['Verificación'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'), description: 'ID de la cosecha (lote)')],
+        responses: [
+            new OA\Response(response: 201, description: 'Solicitud enviada'),
+            new OA\Response(response: 404, description: 'Lote no encontrado'),
+            new OA\Response(response: 422, description: 'Ya tiene una solicitud pendiente/verificada/rechazada'),
+        ]
+    )]
     public function solicitar(Request $request, int $cosechaId)
     {
         $productor = $this->productorAutenticado($request);
@@ -78,6 +92,14 @@ class VerificacionController extends Controller
      * RF14: bandeja de solicitudes, para el Verificador. Filtro opcional por
      * estado (por defecto muestra todas, mas nuevas primero).
      */
+    #[OA\Get(
+        path: '/verificador/solicitudes',
+        summary: 'Bandeja de solicitudes de verificación (rol Verificador)',
+        tags: ['Verificación'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'estado', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['pendiente', 'observado', 'verificado', 'rechazado']))],
+        responses: [new OA\Response(response: 200, description: 'Listado de solicitudes'), new OA\Response(response: 403, description: 'No es Verificador')]
+    )]
     public function index(Request $request)
     {
         $this->verificarVerificador($request);
@@ -99,6 +121,15 @@ class VerificacionController extends Controller
      * RF15: evidencia completa del lote para que el verificador compruebe
      * origen (parcela), produccion, procesamiento y calidad.
      */
+    #[OA\Get(
+        path: '/verificador/solicitudes/{id}',
+        summary: 'Evidencia completa del lote para revisión técnica',
+        description: 'Origen, producción, procesamiento, calidad y diagnósticos de IA recientes de la parcela.',
+        tags: ['Verificación'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Detalle de la solicitud'), new OA\Response(response: 403, description: 'No es Verificador')]
+    )]
     public function detalle(Request $request, int $id)
     {
         $this->verificarVerificador($request);
@@ -130,6 +161,21 @@ class VerificacionController extends Controller
      * RF16-17: el verificador cambia el estado del lote (Observado, Verificado
      * o Rechazado) y puede dejar observaciones/incidencias para el productor.
      */
+    #[OA\Put(
+        path: '/verificador/solicitudes/{id}',
+        summary: 'Resuelve una solicitud: observado, verificado o rechazado',
+        tags: ['Verificación'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['estado'],
+            properties: [
+                new OA\Property(property: 'estado', type: 'string', enum: ['observado', 'verificado', 'rechazado']),
+                new OA\Property(property: 'observaciones', type: 'string', nullable: true),
+            ]
+        )),
+        responses: [new OA\Response(response: 200, description: 'Verificación actualizada'), new OA\Response(response: 403, description: 'No es Verificador')]
+    )]
     public function resolver(Request $request, int $id)
     {
         $this->verificarVerificador($request);
@@ -163,6 +209,13 @@ class VerificacionController extends Controller
      * personalmente, mas recientes primero. Distinto de la bandeja general
      * (index), que muestra TODAS las solicitudes sin importar quien las vio.
      */
+    #[OA\Get(
+        path: '/verificador/mi-historial',
+        summary: 'Verificaciones resueltas personalmente por el Verificador autenticado',
+        tags: ['Verificación'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Historial propio')]
+    )]
     public function miHistorial(Request $request)
     {
         $this->verificarVerificador($request);
@@ -180,6 +233,13 @@ class VerificacionController extends Controller
      * Historial de verificacion de los propios lotes del Productor: a que
      * resultado llego cada solicitud que hizo, y quien la reviso.
      */
+    #[OA\Get(
+        path: '/productor/historial-verificaciones',
+        summary: 'Historial de verificación de los lotes propios del Productor',
+        tags: ['Verificación'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Historial de verificaciones')]
+    )]
     public function historialProductor(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -203,6 +263,23 @@ class VerificacionController extends Controller
      * el productor con una recomendacion concreta, en vez de limitarse a
      * guardar el dato.
      */
+    #[OA\Put(
+        path: '/verificador/parcelas/{id}/parametros-suelo',
+        summary: 'Define los parámetros ideales de suelo de una parcela',
+        description: 'Si el pH queda fuera de 5.0–6.5, genera automáticamente una alerta para el productor.',
+        tags: ['Verificación'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'), description: 'ID de la parcela')],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['ph_suelo', 'fertilidad'],
+            properties: [
+                new OA\Property(property: 'ph_suelo', type: 'number', minimum: 0, maximum: 14),
+                new OA\Property(property: 'humedad_suelo', type: 'number', nullable: true),
+                new OA\Property(property: 'fertilidad', type: 'string', enum: ['baja', 'media', 'alta']),
+            ]
+        )),
+        responses: [new OA\Response(response: 200, description: 'Parámetros registrados'), new OA\Response(response: 403, description: 'No es Verificador')]
+    )]
     public function definirParametrosSuelo(Request $request, int $parcelaId)
     {
         $this->verificarVerificador($request);

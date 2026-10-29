@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ControlCalidad;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class ControlCalidadController extends Controller
 {
@@ -28,6 +29,14 @@ class ControlCalidadController extends Controller
      * RF10: lista los controles de calidad del productor autenticado.
      * Filtro opcional por cosecha: ?cosecha_id=5
      */
+    #[OA\Get(
+        path: '/control-calidad',
+        summary: 'Lista los controles de calidad del productor autenticado',
+        tags: ['Calidad'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'cosecha_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Listado de controles de calidad')]
+    )]
     public function index(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -49,6 +58,24 @@ class ControlCalidadController extends Controller
     /**
      * RF10: registra un control de calidad (humedad, defectos, clasificacion) para un lote propio.
      */
+    #[OA\Post(
+        path: '/control-calidad',
+        summary: 'Registra un control de calidad para un lote propio',
+        tags: ['Calidad'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['cosecha_id', 'fecha'],
+            properties: [
+                new OA\Property(property: 'cosecha_id', type: 'integer'),
+                new OA\Property(property: 'fecha', type: 'string', format: 'date'),
+                new OA\Property(property: 'humedad', type: 'number', nullable: true),
+                new OA\Property(property: 'defectos', type: 'integer', nullable: true),
+                new OA\Property(property: 'clasificacion', type: 'string', enum: ['primera', 'segunda', 'tercera', 'exportacion'], nullable: true),
+                new OA\Property(property: 'observaciones', type: 'string', nullable: true),
+            ]
+        )),
+        responses: [new OA\Response(response: 201, description: 'Control registrado'), new OA\Response(response: 422, description: 'Datos inválidos o lote ajeno')]
+    )]
     public function store(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -78,6 +105,14 @@ class ControlCalidadController extends Controller
     /**
      * Editar un control de calidad propio.
      */
+    #[OA\Put(
+        path: '/control-calidad/{id}',
+        summary: 'Edita un control de calidad propio',
+        tags: ['Calidad'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Control actualizado'), new OA\Response(response: 404, description: 'No encontrado o no es propio')]
+    )]
     public function update(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);
@@ -107,6 +142,14 @@ class ControlCalidadController extends Controller
     /**
      * Eliminar un control de calidad propio.
      */
+    #[OA\Delete(
+        path: '/control-calidad/{id}',
+        summary: 'Elimina un control de calidad propio',
+        tags: ['Calidad'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Control eliminado'), new OA\Response(response: 404, description: 'No encontrado o no es propio')]
+    )]
     public function destroy(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);

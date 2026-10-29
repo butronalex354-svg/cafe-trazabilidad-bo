@@ -8,6 +8,7 @@ use App\Models\Cosecha;
 use App\Models\EtapaProcesamiento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class EtapaProcesamientoController extends Controller
 {
@@ -29,6 +30,14 @@ class EtapaProcesamientoController extends Controller
      * de proceso (no necesariamente el orden en que se registraron).
      * Filtro obligatorio en la practica por lote: ?cosecha_id=5
      */
+    #[OA\Get(
+        path: '/etapas-procesamiento',
+        summary: 'Línea de tiempo de etapas de procesamiento de un lote',
+        tags: ['Procesamiento'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'cosecha_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Etapas en orden cronológico de proceso')]
+    )]
     public function index(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -53,6 +62,24 @@ class EtapaProcesamientoController extends Controller
      * RF11: registra una etapa de procesamiento (despulpado, fermentacion,
      * lavado, secado, tostado, envasado o embalaje) para un lote propio.
      */
+    #[OA\Post(
+        path: '/etapas-procesamiento',
+        summary: 'Registra una etapa de procesamiento para un lote propio',
+        description: 'Etapas: despulpado, fermentación, lavado, secado, tostado, envasado, embalaje.',
+        tags: ['Procesamiento'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['cosecha_id', 'etapa', 'fecha', 'responsable'],
+            properties: [
+                new OA\Property(property: 'cosecha_id', type: 'integer'),
+                new OA\Property(property: 'etapa', type: 'string'),
+                new OA\Property(property: 'fecha', type: 'string', format: 'date'),
+                new OA\Property(property: 'responsable', type: 'string'),
+                new OA\Property(property: 'observaciones', type: 'string', nullable: true),
+            ]
+        )),
+        responses: [new OA\Response(response: 201, description: 'Etapa registrada'), new OA\Response(response: 422, description: 'Datos inválidos o lote ajeno')]
+    )]
     public function store(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -85,6 +112,14 @@ class EtapaProcesamientoController extends Controller
     /**
      * Editar una etapa propia.
      */
+    #[OA\Put(
+        path: '/etapas-procesamiento/{id}',
+        summary: 'Edita una etapa de procesamiento propia',
+        tags: ['Procesamiento'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Etapa actualizada'), new OA\Response(response: 404, description: 'No encontrada o no es propia')]
+    )]
     public function update(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);
@@ -114,6 +149,14 @@ class EtapaProcesamientoController extends Controller
     /**
      * Eliminar una etapa propia.
      */
+    #[OA\Delete(
+        path: '/etapas-procesamiento/{id}',
+        summary: 'Elimina una etapa de procesamiento propia',
+        tags: ['Procesamiento'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Etapa eliminada'), new OA\Response(response: 404, description: 'No encontrada o no es propia')]
+    )]
     public function destroy(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);

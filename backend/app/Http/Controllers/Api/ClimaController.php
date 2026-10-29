@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CondicionClimatica;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use OpenApi\Attributes as OA;
 
 class ClimaController extends Controller
 {
@@ -18,6 +19,20 @@ class ClimaController extends Controller
      * Open-Meteo (no requiere clave de acceso). De paso guarda un registro
      * en `condicionclimatica` con la lectura del dia, para tener historial.
      */
+    #[OA\Get(
+        path: '/parcelas/{id}/clima',
+        summary: 'Clima actual y pronóstico de 7 días para una parcela',
+        description: 'Usa la ubicación GPS de la parcela contra la API de Open-Meteo. Guarda la lectura del día como historial.',
+        tags: ['Monitoreo'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'), description: 'ID de la parcela')],
+        responses: [
+            new OA\Response(response: 200, description: 'Clima actual + pronóstico de 7 días'),
+            new OA\Response(response: 404, description: 'Parcela no encontrada'),
+            new OA\Response(response: 422, description: 'La parcela no tiene coordenadas GPS'),
+            new OA\Response(response: 502, description: 'El servicio de clima no respondió'),
+        ]
+    )]
     public function porParcela(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class DiagnosticoController extends Controller
 {
@@ -19,6 +20,14 @@ class DiagnosticoController extends Controller
      * RF08: historial de diagnosticos del productor autenticado.
      * Filtro opcional por parcela: ?parcela_id=3
      */
+    #[OA\Get(
+        path: '/diagnosticos',
+        summary: 'Historial de diagnósticos de IA del productor autenticado',
+        tags: ['Calidad'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'parcela_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Listado de diagnósticos')]
+    )]
     public function index(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -46,6 +55,25 @@ class DiagnosticoController extends Controller
      * no esta corriendo, se devuelve un error claro en vez de inventar un
      * resultado — nunca se simula silenciosamente.
      */
+    #[OA\Post(
+        path: '/diagnosticos',
+        summary: 'Sube una foto del cultivo y genera un diagnóstico por IA',
+        description: 'Delega en el microservicio FastAPI (modelo MobileNetV2 entrenado con RoCoLe). Si detecta plaga/enfermedad genera una alerta automática (RF09).',
+        tags: ['Calidad'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\MediaType(
+            mediaType: 'multipart/form-data',
+            schema: new OA\Schema(required: ['parcela_id', 'foto'], properties: [
+                new OA\Property(property: 'parcela_id', type: 'integer'),
+                new OA\Property(property: 'foto', type: 'string', format: 'binary'),
+            ])
+        )),
+        responses: [
+            new OA\Response(response: 201, description: 'Diagnóstico generado (resultado: sana/plaga/enfermedad + % de confianza)'),
+            new OA\Response(response: 422, description: 'Datos inválidos, parcela ajena, o la IA no reconoció una hoja/fruto de café'),
+            new OA\Response(response: 502, description: 'El servicio de IA no está disponible o no pudo procesar la imagen'),
+        ]
+    )]
     public function store(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -132,6 +160,14 @@ class DiagnosticoController extends Controller
     /**
      * Eliminar un diagnostico propio (y su foto y alerta asociada, si tiene).
      */
+    #[OA\Delete(
+        path: '/diagnosticos/{id}',
+        summary: 'Elimina un diagnóstico propio (y su foto y alerta asociada)',
+        tags: ['Calidad'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Diagnóstico eliminado'), new OA\Response(response: 404, description: 'No encontrado o no es propio')]
+    )]
     public function destroy(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);

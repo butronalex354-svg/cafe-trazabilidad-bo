@@ -8,6 +8,7 @@ use App\Models\Alerta;
 use App\Models\Inventario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class InventarioController extends Controller
 {
@@ -17,6 +18,17 @@ class InventarioController extends Controller
      * RF13: vista de inventario por lote y por estado del productor autenticado.
      * Filtros opcionales: ?parcela_id=3, ?estado=en_proceso
      */
+    #[OA\Get(
+        path: '/inventario',
+        summary: 'Inventario por lote y estado del productor autenticado',
+        tags: ['Inventario'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(name: 'parcela_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'estado', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['en_proceso', 'terminado', 'exportado'])),
+        ],
+        responses: [new OA\Response(response: 200, description: 'Listado de inventario')]
+    )]
     public function index(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -46,6 +58,23 @@ class InventarioController extends Controller
      * Administrador (RF23), despues de que el Verificador aprobo el lote,
      * para que el propio productor no pueda autoexportarse sin control.
      */
+    #[OA\Put(
+        path: '/inventario/{id}',
+        summary: 'Cambia el estado de un lote en inventario (en_proceso -> terminado)',
+        description: 'El paso a "exportado" es exclusivo del Administrador (RF23), después de la verificación.',
+        tags: ['Inventario'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['estado'],
+            properties: [new OA\Property(property: 'estado', type: 'string', enum: ['en_proceso', 'terminado'])]
+        )),
+        responses: [
+            new OA\Response(response: 200, description: 'Inventario actualizado'),
+            new OA\Response(response: 404, description: 'No encontrado'),
+            new OA\Response(response: 422, description: 'El lote ya fue exportado'),
+        ]
+    )]
     public function update(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);
@@ -92,6 +121,15 @@ class InventarioController extends Controller
      * Define el stock minimo y maximo de un lote (Marco Teorico - Gestion de
      * Inventarios). El minimo es lo que dispara la alerta de desabastecimiento.
      */
+    #[OA\Put(
+        path: '/inventario/{id}/limites',
+        summary: 'Define el stock mínimo y máximo de un lote',
+        description: 'El mínimo dispara una alerta automática de desabastecimiento.',
+        tags: ['Inventario'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Límites actualizados'), new OA\Response(response: 404, description: 'No encontrado')]
+    )]
     public function definirLimites(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);
@@ -132,6 +170,23 @@ class InventarioController extends Controller
      * cantidad disponible del lote. Si el resultado cae por debajo del stock
      * minimo definido, genera una alerta automatica de desabastecimiento.
      */
+    #[OA\Post(
+        path: '/inventario/{id}/salida',
+        summary: 'Registra una salida de almacén (venta, entrega, merma)',
+        description: 'Descuenta la cantidad disponible. Si cae por debajo del mínimo, genera una alerta de desabastecimiento.',
+        tags: ['Inventario'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['cantidad'],
+            properties: [new OA\Property(property: 'cantidad', type: 'number', description: 'Kilogramos')]
+        )),
+        responses: [
+            new OA\Response(response: 200, description: 'Salida registrada'),
+            new OA\Response(response: 404, description: 'No encontrado'),
+            new OA\Response(response: 422, description: 'Cantidad mayor al disponible, o lote ya exportado'),
+        ]
+    )]
     public function registrarSalida(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);

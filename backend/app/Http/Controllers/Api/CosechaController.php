@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cosecha;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class CosechaController extends Controller
 {
@@ -16,6 +17,14 @@ class CosechaController extends Controller
      * RF03: listar las cosechas (lotes) del productor autenticado.
      * Filtro opcional por parcela: ?parcela_id=3
      */
+    #[OA\Get(
+        path: '/cosechas',
+        summary: 'Lista las cosechas (lotes) del productor autenticado',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'parcela_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Listado de lotes propios')]
+    )]
     public function index(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -37,6 +46,23 @@ class CosechaController extends Controller
      * RF03: registrar una cosecha (fecha, cantidad, variedad, parcela de origen).
      * El codigo de trazabilidad unico del lote se genera automaticamente.
      */
+    #[OA\Post(
+        path: '/cosechas',
+        summary: 'Registra una cosecha (lote) nueva',
+        description: 'Genera automáticamente el código de trazabilidad único (LOTE-YYYYMMDD-XXXX) y crea el registro de inventario inicial.',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['parcela_id', 'fecha', 'cantidad', 'variedad_cafe'],
+            properties: [
+                new OA\Property(property: 'parcela_id', type: 'integer'),
+                new OA\Property(property: 'fecha', type: 'string', format: 'date', example: '2026-10-29'),
+                new OA\Property(property: 'cantidad', type: 'number', description: 'Kilogramos'),
+                new OA\Property(property: 'variedad_cafe', type: 'string', example: 'Caturra'),
+            ]
+        )),
+        responses: [new OA\Response(response: 201, description: 'Lote creado'), new OA\Response(response: 422, description: 'Datos inválidos o parcela ajena')]
+    )]
     public function store(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -77,6 +103,14 @@ class CosechaController extends Controller
     /**
      * Editar una cosecha propia (el codigo de trazabilidad no se puede editar).
      */
+    #[OA\Put(
+        path: '/cosechas/{id}',
+        summary: 'Edita una cosecha propia',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Lote actualizado'), new OA\Response(response: 404, description: 'No encontrado o no es propio')]
+    )]
     public function update(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);
@@ -108,6 +142,14 @@ class CosechaController extends Controller
         return response()->json($cosecha->fresh());
     }
 
+    #[OA\Delete(
+        path: '/cosechas/{id}',
+        summary: 'Elimina una cosecha propia',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Lote eliminado'), new OA\Response(response: 404, description: 'No encontrado o no es propio')]
+    )]
     public function destroy(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);

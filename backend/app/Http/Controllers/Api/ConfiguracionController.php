@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Configuracion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class ConfiguracionController extends Controller
 {
@@ -13,6 +14,13 @@ class ConfiguracionController extends Controller
      * Cualquier usuario autenticado puede leer la configuracion (para
      * pintar el color de marca correcto apenas entra al sistema).
      */
+    #[OA\Get(
+        path: '/configuracion',
+        summary: 'Configuración global del sistema (color de marca)',
+        tags: ['Administrador'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Configuración actual')]
+    )]
     public function mostrar()
     {
         return response()->json(Configuracion::actual());
@@ -22,6 +30,17 @@ class ConfiguracionController extends Controller
      * Solo el Administrador puede cambiar el color del sistema, ya que
      * afecta la apariencia de todos los usuarios.
      */
+    #[OA\Put(
+        path: '/configuracion',
+        summary: 'Cambia el color de marca del sistema (rol Administrador)',
+        tags: ['Administrador'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['color_primario'],
+            properties: [new OA\Property(property: 'color_primario', type: 'string', example: '#6F4E37')]
+        )),
+        responses: [new OA\Response(response: 200, description: 'Configuración actualizada'), new OA\Response(response: 403, description: 'No es Administrador')]
+    )]
     public function actualizar(Request $request)
     {
         if ($request->user()->rol !== 'administrador') {

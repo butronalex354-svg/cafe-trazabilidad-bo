@@ -8,6 +8,7 @@ use App\Models\Observacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class ObservacionController extends Controller
 {
@@ -17,6 +18,14 @@ class ObservacionController extends Controller
      * RF05: listar las observaciones del productor autenticado.
      * Filtro opcional por parcela: ?parcela_id=3
      */
+    #[OA\Get(
+        path: '/observaciones',
+        summary: 'Lista las observaciones del cultivo del productor autenticado',
+        tags: ['Monitoreo'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'parcela_id', in: 'query', required: false, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Listado de observaciones')]
+    )]
     public function index(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -38,6 +47,22 @@ class ObservacionController extends Controller
     /**
      * RF05: registrar una observacion del cultivo (fecha, nota y foto opcional).
      */
+    #[OA\Post(
+        path: '/observaciones',
+        summary: 'Registra una observación del cultivo',
+        tags: ['Monitoreo'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\MediaType(
+            mediaType: 'multipart/form-data',
+            schema: new OA\Schema(required: ['parcela_id', 'fecha', 'nota'], properties: [
+                new OA\Property(property: 'parcela_id', type: 'integer'),
+                new OA\Property(property: 'fecha', type: 'string', format: 'date'),
+                new OA\Property(property: 'nota', type: 'string'),
+                new OA\Property(property: 'foto', type: 'string', format: 'binary', nullable: true),
+            ])
+        )),
+        responses: [new OA\Response(response: 201, description: 'Observación registrada'), new OA\Response(response: 422, description: 'Datos inválidos o parcela ajena')]
+    )]
     public function store(Request $request)
     {
         $productor = $this->productorAutenticado($request);
@@ -84,6 +109,14 @@ class ObservacionController extends Controller
      * reemplazar la foto). Si no se manda una foto nueva, se conserva la
      * que ya tenia.
      */
+    #[OA\Put(
+        path: '/observaciones/{id}',
+        summary: 'Edita una observación propia (puede reemplazar la foto)',
+        tags: ['Monitoreo'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Observación actualizada'), new OA\Response(response: 404, description: 'No encontrada o no es propia')]
+    )]
     public function update(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);
@@ -131,6 +164,14 @@ class ObservacionController extends Controller
     /**
      * Eliminar una observacion propia (y su foto, si tiene).
      */
+    #[OA\Delete(
+        path: '/observaciones/{id}',
+        summary: 'Elimina una observación propia (y su foto, si tiene)',
+        tags: ['Monitoreo'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Observación eliminada'), new OA\Response(response: 404, description: 'No encontrada o no es propia')]
+    )]
     public function destroy(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);

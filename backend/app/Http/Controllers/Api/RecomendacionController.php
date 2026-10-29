@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Diagnostico;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use OpenApi\Attributes as OA;
 
 class RecomendacionController extends Controller
 {
@@ -18,6 +19,15 @@ class RecomendacionController extends Controller
      * clima de Open-Meteo y el ultimo diagnostico de IA de la parcela, para
      * darle al productor acciones concretas en vez de solo datos sueltos.
      */
+    #[OA\Get(
+        path: '/parcelas/{id}/recomendaciones',
+        summary: 'Recomendaciones de manejo para una parcela',
+        description: 'Combina pH/fertilidad del suelo, pronóstico de clima y el último diagnóstico de IA en acciones concretas.',
+        tags: ['Monitoreo'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [new OA\Response(response: 200, description: 'Lista de recomendaciones'), new OA\Response(response: 404, description: 'Parcela no encontrada')]
+    )]
     public function porParcela(Request $request, int $id)
     {
         $productor = $this->productorAutenticado($request);

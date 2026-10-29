@@ -8,12 +8,36 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
 {
     /**
      * Registra un productor nuevo y devuelve un token de acceso (Sanctum).
      */
+    #[OA\Post(
+        path: '/register',
+        summary: 'Registra una cuenta nueva de Productor',
+        description: 'La cuenta queda en estado "pendiente" hasta que un Administrador la aprueba (RF25). No requiere login.',
+        tags: ['Autenticación'],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['nombre', 'email', 'password', 'password_confirmation', 'ci', 'telefono', 'direccion'],
+            properties: [
+                new OA\Property(property: 'nombre', type: 'string', example: 'Juan Mamani'),
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'juan@cafe.bo'),
+                new OA\Property(property: 'password', type: 'string', format: 'password', minLength: 6),
+                new OA\Property(property: 'password_confirmation', type: 'string', format: 'password'),
+                new OA\Property(property: 'ci', type: 'string', example: '1234567 LP'),
+                new OA\Property(property: 'telefono', type: 'string', example: '70000000'),
+                new OA\Property(property: 'whatsapp', type: 'string', nullable: true),
+                new OA\Property(property: 'direccion', type: 'string', example: 'Caranavi, La Paz'),
+            ]
+        )),
+        responses: [
+            new OA\Response(response: 201, description: 'Cuenta creada, pendiente de aprobación'),
+            new OA\Response(response: 422, description: 'Datos inválidos (ej. email ya registrado)'),
+        ]
+    )]
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -62,6 +86,29 @@ class AuthController extends Controller
     /**
      * Inicia sesion y devuelve un token de acceso (Sanctum).
      */
+    #[OA\Post(
+        path: '/login',
+        summary: 'Inicia sesión',
+        description: 'Devuelve un token Sanctum si la cuenta existe, la contraseña es correcta y el estado es "aprobado".',
+        tags: ['Autenticación'],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['email', 'password'],
+            properties: [
+                new OA\Property(property: 'email', type: 'string', format: 'email', example: 'productor@cafe.bo'),
+                new OA\Property(property: 'password', type: 'string', format: 'password', example: 'password123'),
+            ]
+        )),
+        responses: [
+            new OA\Response(response: 200, description: 'Login correcto', content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'token', type: 'string'),
+                    new OA\Property(property: 'user', type: 'object'),
+                ]
+            )),
+            new OA\Response(response: 401, description: 'Credenciales incorrectas'),
+            new OA\Response(response: 403, description: 'Cuenta pendiente, rechazada o desactivada'),
+        ]
+    )]
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -124,6 +171,13 @@ class AuthController extends Controller
     /**
      * Devuelve el usuario autenticado actual.
      */
+    #[OA\Get(
+        path: '/me',
+        summary: 'Datos del usuario autenticado',
+        tags: ['Autenticación'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Usuario actual')]
+    )]
     public function me(Request $request)
     {
         return response()->json($request->user());
@@ -132,6 +186,13 @@ class AuthController extends Controller
     /**
      * Cierra la sesion (revoca el token actual).
      */
+    #[OA\Post(
+        path: '/logout',
+        summary: 'Cierra sesión (revoca el token actual)',
+        tags: ['Autenticación'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Sesión cerrada')]
+    )]
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -147,6 +208,13 @@ class AuthController extends Controller
      * registro de Productor que se edita en Parcelas). El Verificador ademas
      * puede guardar su entidad y numero de acreditacion.
      */
+    #[OA\Put(
+        path: '/me',
+        summary: 'Actualiza nombre/email/teléfono de la cuenta propia',
+        tags: ['Autenticación'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Cuenta actualizada'), new OA\Response(response: 422, description: 'Datos inválidos')]
+    )]
     public function actualizarCuenta(Request $request)
     {
         $usuario = $request->user();
@@ -190,6 +258,13 @@ class AuthController extends Controller
      * Preferencias de notificacion: que tipos de alerta quiere ver el
      * usuario autenticado (hoy aplica al Productor: plagas y stock bajo).
      */
+    #[OA\Put(
+        path: '/me/preferencias',
+        summary: 'Actualiza preferencias de notificación (plagas/stock)',
+        tags: ['Autenticación'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Preferencias actualizadas')]
+    )]
     public function actualizarPreferencias(Request $request)
     {
         $usuario = $request->user();
@@ -218,6 +293,13 @@ class AuthController extends Controller
      * Cambia la contraseña de la cuenta autenticada, pidiendo la actual
      * para confirmar que es el dueño de la cuenta quien la cambia.
      */
+    #[OA\Put(
+        path: '/me/password',
+        summary: 'Cambia la contraseña de la cuenta propia',
+        tags: ['Autenticación'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Contraseña actualizada'), new OA\Response(response: 422, description: 'Contraseña actual incorrecta o datos inválidos')]
+    )]
     public function cambiarPassword(Request $request)
     {
         $usuario = $request->user();

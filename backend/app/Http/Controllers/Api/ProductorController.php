@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Concerns\ResuelveProductorAutenticado;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use OpenApi\Attributes as OA;
 
 class ProductorController extends Controller
 {
@@ -14,6 +15,13 @@ class ProductorController extends Controller
     /**
      * RF01: perfil del productor autenticado (datos personales).
      */
+    #[OA\Get(
+        path: '/productor/perfil',
+        summary: 'Perfil del productor autenticado',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        responses: [new OA\Response(response: 200, description: 'Datos del productor')]
+    )]
     public function show(Request $request)
     {
         return response()->json($this->productorAutenticado($request));
@@ -22,6 +30,23 @@ class ProductorController extends Controller
     /**
      * RF01: editar los datos personales del productor autenticado.
      */
+    #[OA\Put(
+        path: '/productor/perfil',
+        summary: 'Edita el perfil del productor autenticado',
+        tags: ['Producción'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['nombre_completo', 'ci', 'telefono', 'direccion'],
+            properties: [
+                new OA\Property(property: 'nombre_completo', type: 'string'),
+                new OA\Property(property: 'ci', type: 'string'),
+                new OA\Property(property: 'telefono', type: 'string'),
+                new OA\Property(property: 'whatsapp', type: 'string', nullable: true),
+                new OA\Property(property: 'direccion', type: 'string'),
+            ]
+        )),
+        responses: [new OA\Response(response: 200, description: 'Perfil actualizado'), new OA\Response(response: 422, description: 'Datos inválidos')]
+    )]
     public function update(Request $request)
     {
         $productor = $this->productorAutenticado($request);
