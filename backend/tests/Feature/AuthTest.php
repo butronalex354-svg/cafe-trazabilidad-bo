@@ -90,6 +90,16 @@ class AuthTest extends TestCase
             ->assertStatus(429);
     }
 
+    public function test_login_normal_no_explota_si_la_cuenta_no_tiene_password_google(): void
+    {
+        User::factory()->create(['email' => 'solo_google@cafe.bo', 'password' => null, 'google_id' => '123456789']);
+
+        $this->postJson('/api/login', [
+            'email' => 'solo_google@cafe.bo',
+            'password' => 'cualquiera123',
+        ])->assertStatus(401);
+    }
+
     public function test_registro_rechaza_password_debil(): void
     {
         $response = $this->postJson('/api/register', [

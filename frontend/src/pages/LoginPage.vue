@@ -81,20 +81,37 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/auth'
 import logoCafeAndino from '@/assets/logo-cafe-andino.png'
 import AnimatedCafeBackground from '@/components/AnimatedCafeBackground.vue'
 
+const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 const $q = useQuasar()
 
 function onGoogleClick () {
-  $q.notify({ message: 'Registro con Google próximamente', color: 'grey-8' })
+  // Navegacion de pagina completa (no axios): el backend redirige a Google
+  // y, al volver, redirige a /auth/google/callback con el token.
+  window.location.href = `http://${window.location.hostname}:8000/api/auth/google/redirect`
 }
+
+const MENSAJES_ERROR_GOOGLE = {
+  pendiente: 'Tu cuenta todavía no fue aprobada por un administrador.',
+  rechazado: 'Tu cuenta fue rechazada. Contacta al administrador.',
+  desactivado: 'Tu cuenta fue desactivada por un administrador.',
+  fallo: 'No se pudo iniciar sesión con Google. Intenta de nuevo.'
+}
+
+onMounted(() => {
+  const error = route.query.google_error
+  if (error) {
+    errorMsg.value = MENSAJES_ERROR_GOOGLE[error] || 'No se pudo iniciar sesión con Google.'
+  }
+})
 
 const email = ref('')
 const password = ref('')

@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ControlCalidadController;
 use App\Http\Controllers\Api\CosechaController;
 use App\Http\Controllers\Api\DiagnosticoController;
 use App\Http\Controllers\Api\EtapaProcesamientoController;
+use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\InventarioController;
 use App\Http\Controllers\Api\ObservacionController;
 use App\Http\Controllers\Api\ParcelaController;
@@ -23,6 +24,10 @@ use Illuminate\Support\Facades\Route;
 // en el login y spam de registros. Laravel responde 429 al superarlo.
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
+
+// Login con Google (navegacion de pagina completa, no JSON -- ver GoogleAuthController).
+Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])->middleware('throttle:10,1');
+Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->middleware('throttle:10,1');
 
 // Modulo 7 - Exportacion (RF18-22): pagina publica del Comprador, sin login.
 Route::get('/trazabilidad/{codigo}', [TrazabilidadController::class, 'porCodigo']);

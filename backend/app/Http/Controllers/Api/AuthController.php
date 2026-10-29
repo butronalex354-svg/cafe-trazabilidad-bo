@@ -129,7 +129,10 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        // $user->password puede ser null (cuenta que solo se registro con
+        // Google, sin password propia) -- Hash::check() explotaria con un
+        // string vacio/null, asi que se corta antes.
+        if (! $user || ! $user->password || ! Hash::check($request->password, $user->password)) {
             return response()->json([
                 'message' => 'Credenciales incorrectas.',
             ], 401);
@@ -320,7 +323,9 @@ class AuthController extends Controller
             ], 422);
         }
 
-        if (! Hash::check($request->password_actual, $usuario->password)) {
+        // Si la cuenta se creo solo con Google (sin password propia), no
+        // hay nada que comparar -- se le permite definir una por primera vez.
+        if ($usuario->password && ! Hash::check($request->password_actual, $usuario->password)) {
             return response()->json(['message' => 'La contraseña actual no es correcta.'], 422);
         }
 

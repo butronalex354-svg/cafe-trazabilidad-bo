@@ -41,4 +41,15 @@ return [
         'url' => env('IA_SERVICE_URL', 'http://127.0.0.1:8001'),
     ],
 
+    // Login con Google (Laravel Socialite). El redirect debe coincidir
+    // EXACTO con el que se registra en Google Cloud Console.
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', 'http://127.0.0.1:8000/api/auth/google/callback'),
+        // A donde se redirige al terminar (la SPA de Quasar), para que la
+        // recoja el token desde la URL.
+        'frontend_url' => env('FRONTEND_URL', 'http://localhost:9000'),
+    ],
+
 ];

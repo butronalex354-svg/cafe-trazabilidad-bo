@@ -22,6 +22,20 @@ export const useAuthStore = defineStore('auth', {
       return data.user
     },
 
+    // Login con Google: el backend ya genero el token (via redirect de
+    // pagina completa) y lo entrega por la URL -- aca solo falta guardarlo
+    // y pedir los datos del usuario, ya que /auth/google/callback no
+    // devuelve JSON (es un redirect, no una llamada axios).
+    async loginConToken (token, remember = true) {
+      this.token = token
+      const { data: user } = await api.get('/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      this.user = user
+      setAuth(token, user, remember)
+      return user
+    },
+
     async register (nombre, email, password, passwordConfirmation, datosProductor = {}) {
       // La cuenta queda "pendiente" hasta que el Administrador la aprueba,
       // asi que el registro ya NO entrega token ni inicia sesion sola.

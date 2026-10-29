@@ -8,6 +8,12 @@ const routes = [
     component: () => import('@/pages/RegisterPage.vue')
   },
   {
+    // A donde redirige el backend despues de un login con Google exitoso
+    // (ver GoogleAuthController::callback), con el token en ?token=...
+    path: '/auth/google/callback',
+    component: () => import('@/pages/GoogleCallbackPage.vue')
+  },
+  {
     // RF19: pagina publica (sin login) a la que apunta el QR de cada lote.
     path: '/trazabilidad/:codigo',
     component: () => import('@/pages/TrazabilidadPublicaPage.vue')

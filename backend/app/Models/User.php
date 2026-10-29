@@ -28,6 +28,7 @@ class User extends Authenticatable
         'nombre',
         'email',
         'password',
+        'google_id',
         'rol',
         'estado',
         'notificar_plagas',
