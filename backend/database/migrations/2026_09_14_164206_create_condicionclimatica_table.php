@@ -23,11 +23,19 @@ return new class extends Migration
         }
 
         Schema::create('condicionclimatica', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('parcela_id')->constrained('parcela');
+            // int(11) con signo, igual que parcela (ver nota en
+            // create_productor_table.php).
+            $table->integer('id', true);
+            $table->integer('parcela_id');
+            $table->foreign('parcela_id')->references('id')->on('parcela');
             $table->date('fecha')->nullable();
             $table->decimal('temperatura', 5, 2)->nullable();
             $table->decimal('humedad', 5, 2)->nullable();
+            // Normalmente la agrega add_probabilidad_lluvia_to_condicionclimatica_table,
+            // pero esa migracion quedo fechada antes que esta (ver su propio
+            // comentario) y en un entorno nuevo corre primero sin poder
+            // hacer nada, asi que se incluye directo aca tambien.
+            $table->decimal('probabilidad_lluvia', 5, 2)->nullable();
             $table->string('fuente', 50)->nullable();
         });
     }

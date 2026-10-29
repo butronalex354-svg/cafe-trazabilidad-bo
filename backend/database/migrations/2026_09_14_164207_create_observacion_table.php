@@ -21,8 +21,11 @@ return new class extends Migration
         }
 
         Schema::create('observacion', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('parcela_id')->constrained('parcela');
+            // int(11) con signo, igual que parcela (ver nota en
+            // create_productor_table.php).
+            $table->integer('id', true);
+            $table->integer('parcela_id');
+            $table->foreign('parcela_id')->references('id')->on('parcela');
             $table->date('fecha')->nullable();
             $table->text('nota')->nullable();
             $table->string('foto_url')->nullable();

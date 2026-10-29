@@ -22,8 +22,11 @@ return new class extends Migration
         }
 
         Schema::create('productor', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('usuario_id')->constrained('usuario');
+            // id/usuario_id son int(11) con signo (igual que `usuario`), no
+            // bigint -- si no, la FK no se puede crear (errno 150).
+            $table->integer('id', true);
+            $table->integer('usuario_id');
+            $table->foreign('usuario_id')->references('id')->on('usuario');
             $table->string('nombre_completo', 150);
             $table->string('ci', 20)->nullable();
             $table->string('telefono', 20)->nullable();

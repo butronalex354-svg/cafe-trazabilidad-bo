@@ -12,6 +12,15 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Este archivo quedo fechado (por error) ANTES que
+        // create_condicionclimatica_table, asi que en un entorno nuevo
+        // Laravel lo ejecuta primero y la tabla todavia no existe. Se
+        // protege con estos guards (en la BD real no afecta nada: la tabla
+        // y la columna ya existen, asi que de todas formas no haria nada).
+        if (! Schema::hasTable('condicionclimatica') || Schema::hasColumn('condicionclimatica', 'probabilidad_lluvia')) {
+            return;
+        }
+
         Schema::table('condicionclimatica', function (Blueprint $table) {
             $table->decimal('probabilidad_lluvia', 5, 2)->nullable()->after('humedad');
         });

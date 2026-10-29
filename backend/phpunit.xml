@@ -23,8 +23,16 @@
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <!-- Se usa MySQL real (no sqlite) porque varias migraciones tienen
+             SQL especifico de MySQL (ALTER ... MODIFY ENUM) y la BD mezcla
+             tablas creadas fuera de Laravel (int(11) con signo) con tablas
+             de Laravel (bigint); sqlite no reproduce ese comportamiento. -->
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="3307"/>
+        <env name="DB_DATABASE" value="cafe_trazabilidad_test"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value=""/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

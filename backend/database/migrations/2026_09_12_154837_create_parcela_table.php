@@ -22,8 +22,11 @@ return new class extends Migration
         }
 
         Schema::create('parcela', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('productor_id')->constrained('productor');
+            // int(11) con signo, igual que productor/usuario (ver nota en
+            // create_productor_table.php).
+            $table->integer('id', true);
+            $table->integer('productor_id');
+            $table->foreign('productor_id')->references('id')->on('productor');
             $table->string('nombre_parcela', 100)->nullable();
             $table->string('ubicacion', 255)->nullable();
             $table->decimal('tamano_terreno', 10, 2)->nullable();

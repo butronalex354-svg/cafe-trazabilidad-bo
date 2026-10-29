@@ -21,8 +21,11 @@ return new class extends Migration
         }
 
         Schema::create('cosecha', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('parcela_id')->constrained('parcela');
+            // int(11) con signo, igual que parcela/productor/usuario (ver
+            // nota en create_productor_table.php).
+            $table->integer('id', true);
+            $table->integer('parcela_id');
+            $table->foreign('parcela_id')->references('id')->on('parcela');
             $table->date('fecha')->nullable();
             $table->decimal('cantidad', 10, 2)->nullable();
             $table->string('variedad_cafe', 100)->nullable();

@@ -4,42 +4,59 @@ namespace Database\Factories;
 
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
+    protected $model = User::class;
 
     /**
-     * Define the model's default state.
+     * Define el estado por defecto: un productor ya aprobado, para que los
+     * tests no tengan que lidiar con el flujo de aprobacion salvo que lo
+     * prueben explicitamente.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'nombre' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'password' => 'password123',
+            'rol' => 'productor',
+            'estado' => 'aprobado',
         ];
     }
 
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
+    public function productor(): static
     {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
+        return $this->state(fn () => ['rol' => 'productor']);
+    }
+
+    public function verificador(): static
+    {
+        return $this->state(fn () => ['rol' => 'verificador']);
+    }
+
+    public function administrador(): static
+    {
+        return $this->state(fn () => ['rol' => 'administrador']);
+    }
+
+    public function pendiente(): static
+    {
+        return $this->state(fn () => ['estado' => 'pendiente']);
+    }
+
+    public function rechazado(): static
+    {
+        return $this->state(fn () => ['estado' => 'rechazado']);
+    }
+
+    public function desactivado(): static
+    {
+        return $this->state(fn () => ['estado' => 'desactivado']);
     }
 }
