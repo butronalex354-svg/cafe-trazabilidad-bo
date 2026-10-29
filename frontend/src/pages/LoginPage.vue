@@ -263,15 +263,15 @@ async function onSubmit () {
   border: 1px solid rgba(212, 166, 47, 0.25);
 }
 
+/* En celular ya no hay lugar para 2 columnas lado a lado: el panel pasa
+   a mostrarse arriba, apilado, y la pantalla deja de ser de altura fija
+   (window-height de Quasar) para poder hacer scroll si no entra todo. */
 @media (max-width: 1023px) {
-  // En celular ya no hay lugar para 2 columnas lado a lado: el panel pasa
-  // a mostrarse arriba, apilado, y la pantalla deja de ser de altura fija
-  // (window-height de Quasar) para poder hacer scroll si no entra todo.
   .login-wrapper {
     flex-direction: column;
-    // Quasar le pone "height: 100vh !important" via la clase window-height
-    // del template -- hay que ganarle con !important tambien, si no el
-    // contenido apilado (panel + tarjeta) queda cortado sin poder hacer scroll.
+    /* Quasar le pone "height: 100vh !important" via la clase window-height
+       del template -- hay que ganarle con !important tambien, si no el
+       contenido apilado (panel + tarjeta) queda cortado sin poder hacer scroll. */
     height: auto !important;
     min-height: 100vh;
     overflow-y: auto;
