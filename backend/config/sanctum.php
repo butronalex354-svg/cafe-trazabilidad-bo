@@ -50,7 +50,10 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Antes quedaba en null (los tokens nunca expiraban). 7 dias = 10080
+    // minutos: suficiente para no cerrar sesion sola en medio de una
+    // demo/uso normal, pero ya no son validos para siempre.
+    'expiration' => (int) env('SANCTUM_TOKEN_EXPIRATION', 10080),
 
     /*
     |--------------------------------------------------------------------------

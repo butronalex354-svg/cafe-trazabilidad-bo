@@ -19,8 +19,10 @@ use App\Http\Controllers\Api\TrazabilidadController;
 use App\Http\Controllers\Api\VerificacionController;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+// throttle:6,1 = maximo 6 intentos por minuto por IP, contra fuerza bruta
+// en el login y spam de registros. Laravel responde 429 al superarlo.
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:6,1');
 
 // Modulo 7 - Exportacion (RF18-22): pagina publica del Comprador, sin login.
 Route::get('/trazabilidad/{codigo}', [TrazabilidadController::class, 'porCodigo']);

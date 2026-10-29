@@ -13,6 +13,7 @@ use App\Models\Reclamo;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 use OpenApi\Attributes as OA;
 
 class AdministradorController extends Controller
@@ -138,7 +139,7 @@ class AdministradorController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:150',
             'email' => 'required|email|max:150|unique:usuario,email',
-            'password' => 'required|string|min:6',
+            'password' => ['required', Password::min(8)->letters()->numbers()],
             'rol' => 'required|in:verificador,administrador',
         ]);
 

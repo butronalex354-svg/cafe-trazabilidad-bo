@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 use OpenApi\Attributes as OA;
 
 class AuthController extends Controller
@@ -43,7 +44,10 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre' => 'required|string|max:150',
             'email' => 'required|email|max:150|unique:usuario,email',
-            'password' => 'required|string|min:6|confirmed',
+            // Minimo 8 caracteres, con al menos una letra y un numero (no se
+            // exige mayusculas/simbolos para no complicar el registro de
+            // productores que pueden no estar acostumbrados a eso).
+            'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
             // RF01: el registro de un productor exige tambien sus datos personales.
             'ci' => 'required|string|max:20',
             'telefono' => 'required|string|max:20',
@@ -306,7 +310,7 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), [
             'password_actual' => 'required|string',
-            'password_nueva' => 'required|string|min:6|confirmed',
+            'password_nueva' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ]);
 
         if ($validator->fails()) {

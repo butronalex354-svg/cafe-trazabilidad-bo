@@ -76,4 +76,32 @@ class AuthTest extends TestCase
             'password' => 'otra-password',
         ])->assertStatus(401);
     }
+
+    public function test_login_se_bloquea_despues_de_6_intentos_por_minuto(): void
+    {
+        User::factory()->create(['email' => 'productor@cafe.bo', 'password' => 'password123']);
+
+        for ($i = 0; $i < 6; $i++) {
+            $this->postJson('/api/login', ['email' => 'productor@cafe.bo', 'password' => 'mala'])
+                ->assertStatus(401);
+        }
+
+        $this->postJson('/api/login', ['email' => 'productor@cafe.bo', 'password' => 'password123'])
+            ->assertStatus(429);
+    }
+
+    public function test_registro_rechaza_password_debil(): void
+    {
+        $response = $this->postJson('/api/register', [
+            'nombre' => 'Juan Mamani',
+            'email' => 'juan@cafe.bo',
+            'password' => 'sololetras',
+            'password_confirmation' => 'sololetras',
+            'ci' => '1234567 LP',
+            'telefono' => '70000000',
+            'direccion' => 'Caranavi, La Paz',
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors('password');
+    }
 }
