@@ -87,6 +87,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/administrador/auditoria', [AdministradorController::class, 'auditoria']);
     Route::get('/administrador/lotes-para-exportar', [AdministradorController::class, 'lotesParaExportar']);
     Route::put('/administrador/lotes/{id}/autorizar-exportacion', [AdministradorController::class, 'autorizarExportacion']);
+    Route::get('/administrador/lotes-exportados', [AdministradorController::class, 'lotesExportados']);
+    Route::post('/administrador/lotes/{id}/envio', [AdministradorController::class, 'agregarEstadoEnvio']);
     Route::get('/administrador/reclamos', [AdministradorController::class, 'reclamos']);
     Route::put('/administrador/reclamos/{id}/atender', [AdministradorController::class, 'atenderReclamo']);
     Route::get('/administrador/lotes/buscar', [AdministradorController::class, 'buscarLotes']);

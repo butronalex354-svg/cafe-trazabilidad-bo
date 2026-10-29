@@ -92,4 +92,9 @@ class Cosecha extends Model
     {
         return $this->hasMany(Reclamo::class, 'cosecha_id');
     }
+
+    public function envios(): HasMany
+    {
+        return $this->hasMany(Envio::class, 'cosecha_id');
+    }
 }

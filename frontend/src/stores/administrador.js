@@ -9,6 +9,7 @@ export const useAdministradorStore = defineStore('administrador', {
     reportes: null,
     auditoria: [],
     lotesParaExportar: [],
+    lotesExportados: [],
     reclamos: [],
     resultadosBusqueda: [],
     cargando: false
@@ -86,6 +87,23 @@ export const useAdministradorStore = defineStore('administrador', {
     async autorizarExportacion (cosechaId) {
       const { data } = await api.put(`/administrador/lotes/${cosechaId}/autorizar-exportacion`)
       this.lotesParaExportar = this.lotesParaExportar.filter(c => c.id !== cosechaId)
+      return data
+    },
+
+    async cargarLotesExportados () {
+      this.cargando = true
+      try {
+        const { data } = await api.get('/administrador/lotes-exportados')
+        this.lotesExportados = data
+      } finally {
+        this.cargando = false
+      }
+    },
+
+    async agregarEstadoEnvio (cosechaId, payload) {
+      const { data } = await api.post(`/administrador/lotes/${cosechaId}/envio`, payload)
+      const lote = this.lotesExportados.find(c => c.id === cosechaId)
+      if (lote) lote.envios.push(data.envio)
       return data
     },
 

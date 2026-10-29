@@ -23,6 +23,7 @@ class TrazabilidadController extends Controller
                 'controlesCalidad',
                 'verificacion',
                 'inventario',
+                'envios' => fn ($q) => $q->orderBy('fecha')->orderBy('id'),
             ])
             ->where('codigo_trazabilidad', $codigo)
             ->first();

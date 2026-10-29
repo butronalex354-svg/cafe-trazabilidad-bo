@@ -74,6 +74,22 @@
           </q-timeline>
         </q-card>
 
+        <q-card v-if="lote.envios?.length" flat bordered class="caja-tema q-pa-md q-mb-md">
+          <div class="text-subtitle2 text-brown-8 q-mb-sm">Seguimiento de envío</div>
+          <q-timeline color="brown-7">
+            <q-timeline-entry
+              v-for="e in lote.envios"
+              :key="e.id"
+              :title="etiquetaEnvio(e.estado)"
+              :subtitle="formatearFecha(e.fecha)"
+              :icon="iconoEnvio(e.estado)"
+              :color="colorEnvio(e.estado)"
+            >
+              <div v-if="e.nota">{{ e.nota }}</div>
+            </q-timeline-entry>
+          </q-timeline>
+        </q-card>
+
         <q-card flat bordered class="caja-tema q-pa-md q-mb-md">
           <div class="text-subtitle2 text-brown-8 q-mb-sm">Calidad</div>
           <div v-if="lote.controles_calidad?.length === 0" class="text-grey-7 text-caption">
@@ -142,6 +158,13 @@ const coloresVerificacion = { pendiente: 'amber-8', observado: 'orange-9', verif
 const etiquetaVerificacion = computed(() => etiquetasVerificacion[lote.value?.verificacion?.estado] || 'Sin verificación todavía')
 const colorVerificacion = computed(() => coloresVerificacion[lote.value?.verificacion?.estado] || 'grey-7')
 
+const etiquetasEnvio = { listo_transporte: 'Listo para transporte', en_transito: 'En tránsito', en_aduana: 'En aduana', entregado: 'Entregado al comprador' }
+const coloresEnvio = { listo_transporte: 'grey-7', en_transito: 'blue-7', en_aduana: 'orange-8', entregado: 'positive' }
+const iconosEnvio = { listo_transporte: 'inventory_2', en_transito: 'local_shipping', en_aduana: 'fact_check', entregado: 'check_circle' }
+const etiquetaEnvio = (estado) => etiquetasEnvio[estado] || estado
+const colorEnvio = (estado) => coloresEnvio[estado] || 'grey-6'
+const iconoEnvio = (estado) => iconosEnvio[estado] || 'local_shipping'
+
 function formatearFecha (fecha) {
   if (!fecha) return ''
   return new Date(fecha).toLocaleDateString('es-BO')
@@ -193,6 +216,11 @@ async function descargarCertificado () {
     lote.value.controles_calidad.forEach(c => linea(`  - Humedad ${c.humedad}%, ${c.defectos} defectos, clasificación ${c.clasificacion}`))
   } else {
     linea('  Sin registros.')
+  }
+  if (lote.value.envios?.length) {
+    y += 4
+    linea('Seguimiento de envío:')
+    lote.value.envios.forEach(e => linea(`  - ${etiquetaEnvio(e.estado)} (${formatearFecha(e.fecha)})`))
   }
   y += 10
   doc.setFontSize(9)

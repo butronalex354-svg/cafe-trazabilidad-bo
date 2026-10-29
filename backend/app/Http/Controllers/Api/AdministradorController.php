@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Alerta;
 use App\Models\Auditoria;
 use App\Models\Cosecha;
+use App\Models\Envio;
 use App\Models\Inventario;
 use App\Models\Parcela;
 use App\Models\Reclamo;
@@ -237,6 +238,70 @@ class AdministradorController extends Controller
         Auditoria::registrar($request->user()->id, null, 'autorizar_exportacion', "Autorizó la exportación del lote {$cosecha->codigo_trazabilidad}.");
 
         return response()->json(['message' => 'Exportación autorizada.', 'inventario' => $cosecha->inventario->fresh()]);
+    }
+
+    /**
+     * Lotes ya exportados, con su linea de tiempo de envio, para que el
+     * Administrador le vaya agregando el estado del transporte hasta que
+     * llegue al comprador.
+     */
+    public function lotesExportados(Request $request)
+    {
+        $this->verificarAdministrador($request);
+
+        $cosechas = Cosecha::whereHas('inventario', function ($q) {
+                $q->where('estado', 'exportado');
+            })
+            ->with([
+                'parcela.productor',
+                'envios' => fn ($q) => $q->orderBy('fecha')->orderBy('id'),
+            ])
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json($cosechas);
+    }
+
+    /**
+     * Agrega un nuevo estado a la linea de tiempo de envio de un lote ya
+     * exportado (no reemplaza los anteriores, los va acumulando). No
+     * requiere GPS ni una empresa de transporte real: el Administrador lo
+     * carga a mano a medida que avanza el envio.
+     */
+    public function agregarEstadoEnvio(Request $request, int $cosechaId)
+    {
+        $this->verificarAdministrador($request);
+
+        $cosecha = Cosecha::with('inventario')->findOrFail($cosechaId);
+
+        if (! $cosecha->inventario || $cosecha->inventario->estado !== 'exportado') {
+            return response()->json(['message' => 'Este lote todavía no fue exportado.'], 422);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'estado' => 'required|in:listo_transporte,en_transito,en_aduana,entregado',
+            'fecha' => 'required|date',
+            'nota' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Datos invalidos.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $envio = Envio::create([
+            'cosecha_id' => $cosecha->id,
+            'estado' => $request->estado,
+            'fecha' => $request->fecha,
+            'nota' => $request->nota,
+            'created_at' => now(),
+        ]);
+
+        Auditoria::registrar($request->user()->id, null, 'agregar_estado_envio', "Actualizó el envío del lote {$cosecha->codigo_trazabilidad} a \"{$request->estado}\".");
+
+        return response()->json(['message' => 'Estado de envío agregado.', 'envio' => $envio], 201);
     }
 
     /**
