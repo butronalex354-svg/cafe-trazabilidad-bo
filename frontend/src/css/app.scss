@@ -31,8 +31,11 @@
   --gradiente-icono: linear-gradient(145deg, var(--color-primario) 0%, var(--color-primario-oscuro) 100%);
   // Degradado oscuro del header/drawer
   --gradiente-oscuro: linear-gradient(165deg, #2f2318 0%, #241a11 55%, #1a130c 100%);
-  // Fondo general de las paginas (todas las pantallas del Productor lo usan)
-  --gradiente-fondo-pagina: linear-gradient(170deg, #fdf6e9 0%, #f3e0bd 45%, #ecd3a3 100%);
+  // Fondo general de las paginas (todas las pantallas del Productor lo usan).
+  // Mas calido y marcado que antes (el usuario lo veia muy palido/plano);
+  // sigue siendo claro para que el texto oscuro (--color-texto-oscuro) se
+  // siga leyendo bien.
+  --gradiente-fondo-pagina: linear-gradient(170deg, #fbf0d9 0%, #edc980 50%, #d9a654 100%);
 }
 
 // Fondo de pagina compartido por Inicio, Parcelas y Producción, para que se
