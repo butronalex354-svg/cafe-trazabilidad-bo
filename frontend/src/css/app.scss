@@ -158,7 +158,24 @@ html[data-tema="oscuro"] {
     background: var(--gradiente-fondo-pagina);
   }
 
-  .caja-tema {
+  // Quasar le pone "background: #fff" a .q-menu y .q-card por defecto (sus
+  // propias clases, no las nuestras) -- sin esto, CUALQUIER menu o dialogo
+  // del sistema (los formularios de "Nueva parcela", "Registrar cosecha",
+  // confirmaciones, etc. son todos <q-card> adentro de un <q-dialog>) se
+  // queda blanco con texto invisible, aunque .caja-tema diga lo contrario,
+  // porque el CSS de Quasar se carga despues. Va primero en el archivo para
+  // que las tarjetas mas especificas de abajo (.stat-card, etc.) lo puedan
+  // pisar cuando hace falta un color distinto.
+  .q-menu, .q-card {
+    background: linear-gradient(160deg, #2a2018 0%, #332717 100%) !important;
+  }
+
+  // .caja-tema es la clase central para "tarjeta/caja con el color del
+  // tema", pero algunas pantallas (Dashboard, Monitoreo, Parcelas) armaron
+  // su propia tarjeta con el mismo degradado en vez de usar esta clase, asi
+  // que hay que taparlas tambien aca, una por una, hasta que se migren a
+  // usar .caja-tema directamente.
+  .caja-tema, .empty-state, .clima-actual, .pronostico-dia, .tarjeta-perfil {
     background: linear-gradient(160deg, #2a2018 0%, #332717 100%) !important;
     border-color: rgba(224, 168, 74, 0.25) !important;
   }
