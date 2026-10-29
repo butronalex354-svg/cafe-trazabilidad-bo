@@ -16,6 +16,6 @@ class Configuracion extends Model
 
     public static function actual(): self
     {
-        return static::firstOrCreate(['id' => 1], ['color_primario' => '#e0a84a']);
+        return static::firstOrCreate(['id' => 1], ['color_primario' => '#d4a62f']);
     }
 }

@@ -1,7 +1,35 @@
 <template>
-  <div class="login-wrapper window-height window-width flex flex-center">
+  <div class="login-wrapper window-height window-width">
     <AnimatedCafeBackground />
 
+    <div class="hero-panel">
+      <div class="hero-logo-wrap">
+        <img :src="logoCafeAndino" alt="Café Andino" class="hero-logo" />
+      </div>
+
+      <h1 class="hero-title">Trazabilidad Inteligente<br>del Café Boliviano</h1>
+      <p class="hero-subtitle">
+        Desde la parcela hasta la exportación: cada lote queda registrado, verificado
+        y disponible para consultar con un simple escaneo QR.
+      </p>
+
+      <div class="hero-features">
+        <div class="feature-row">
+          <div class="feature-icon"><q-icon name="qr_code_2" size="20px" /></div>
+          <span>Trazabilidad completa por lote, desde la cosecha hasta la exportación</span>
+        </div>
+        <div class="feature-row">
+          <div class="feature-icon"><q-icon name="eco" size="20px" /></div>
+          <span>Diagnóstico de plagas y enfermedades con IA</span>
+        </div>
+        <div class="feature-row">
+          <div class="feature-icon"><q-icon name="verified" size="20px" /></div>
+          <span>Verificación técnica y control de calidad en cada etapa</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-panel flex flex-center">
     <div class="login-card">
       <div class="text-center q-mb-md">
         <div class="logo-frame">
@@ -77,6 +105,7 @@
         <span class="text-caption create-account-link cursor-pointer" @click="router.push('/registro')">Crear una cuenta</span>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -138,8 +167,109 @@ async function onSubmit () {
 .login-wrapper {
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
   background: radial-gradient(ellipse at 50% 0%, #241812 0%, #140d09 45%, #050302 100%);
   font-family: 'Poppins', sans-serif;
+}
+
+.form-panel {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 50%;
+}
+
+.hero-panel {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 9%;
+  animation: heroEnter .8s cubic-bezier(.2, .8, .2, 1) both;
+}
+@keyframes heroEnter {
+  from { opacity: 0; transform: translateX(-16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.hero-logo-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+.hero-logo-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle, rgba(255, 214, 140, 0.3) 0%, rgba(212, 166, 47, 0.12) 50%, transparent 75%);
+  filter: blur(18px);
+  z-index: -1;
+}
+
+.hero-logo {
+  width: 220px;
+  max-width: 60%;
+  filter: brightness(1.1) contrast(1.1) saturate(1.15) drop-shadow(0 0 18px rgba(255, 200, 120, 0.35));
+}
+
+.hero-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.4rem;
+  line-height: 1.2;
+  font-weight: 700;
+  margin: 0 0 18px;
+  max-width: 480px;
+  background: linear-gradient(135deg, #fff6e8 20%, #d4a62f 85%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  color: #c9b79a;
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 0 36px;
+}
+
+.hero-features {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 420px;
+}
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #e8d9bf;
+  font-size: .92rem;
+  line-height: 1.4;
+}
+.feature-icon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f3dfa0;
+  background: rgba(212, 166, 47, 0.1);
+  border: 1px solid rgba(212, 166, 47, 0.25);
+}
+
+@media (max-width: 1023px) {
+  .hero-panel {
+    display: none;
+  }
+  .form-panel {
+    flex: 1 1 100%;
+  }
 }
 
 .login-card {
@@ -150,10 +280,10 @@ async function onSubmit () {
   padding: 36px 32px;
   border-radius: 18px;
   background: rgba(20, 14, 10, 0.45);
-  border: 1px solid rgba(214, 158, 46, 0.3);
+  border: 1px solid rgba(212, 166, 47, 0.3);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 0 40px rgba(214, 158, 46, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 40px rgba(212, 166, 47, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   font-family: 'Poppins', sans-serif;
   animation: cardEnter .7s cubic-bezier(.2, .8, .2, 1) both;
@@ -172,7 +302,7 @@ async function onSubmit () {
   content: '';
   position: absolute;
   inset: 14%;
-  background: radial-gradient(circle, rgba(255, 214, 140, 0.28) 0%, rgba(224, 168, 74, 0.1) 50%, transparent 75%);
+  background: radial-gradient(circle, rgba(255, 214, 140, 0.28) 0%, rgba(212, 166, 47, 0.1) 50%, transparent 75%);
   filter: blur(8px);
   z-index: -1;
   border-radius: 50%;
@@ -215,8 +345,8 @@ async function onSubmit () {
 }
 
 .gold-input :deep(.q-field__control) {
-  background: rgba(224, 168, 74, 0.06) !important;
-  border: 1px solid rgba(224, 168, 74, 0.3);
+  background: rgba(212, 166, 47, 0.06) !important;
+  border: 1px solid rgba(212, 166, 47, 0.3);
   border-radius: 8px;
   padding: 0 12px;
   height: 42px;
@@ -224,12 +354,12 @@ async function onSubmit () {
   transition: box-shadow .2s, border-color .2s;
 }
 .gold-input.q-field--focused :deep(.q-field__control) {
-  border-color: rgba(224, 168, 74, 0.9);
-  box-shadow: 0 0 12px rgba(224, 168, 74, 0.35);
+  border-color: rgba(212, 166, 47, 0.9);
+  box-shadow: 0 0 12px rgba(212, 166, 47, 0.35);
 }
 .gold-input :deep(input) {
   color: #fff6e8 !important;
-  caret-color: #f0c878;
+  caret-color: #f3dfa0;
 }
 .gold-input :deep(input::placeholder) {
   color: #8a7458;
@@ -246,23 +376,23 @@ async function onSubmit () {
 }
 
 .forgot-link {
-  color: #d6a84a;
+  color: #c9962f;
 }
 .forgot-link:hover {
   text-decoration: underline;
 }
 
 .sign-in-btn {
-  background: linear-gradient(135deg, #e0a84a, #8a5a1e);
+  background: linear-gradient(135deg, #d4a62f, #6a5318);
   color: #1a1108;
   height: 46px;
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(224, 168, 74, 0.35);
+  box-shadow: 0 0 20px rgba(212, 166, 47, 0.35);
   transition: transform .18s ease, box-shadow .18s ease;
 }
 .sign-in-btn:hover {
   transform: translateY(-2px) scale(1.015);
-  box-shadow: 0 4px 26px rgba(224, 168, 74, 0.5);
+  box-shadow: 0 4px 26px rgba(212, 166, 47, 0.5);
 }
 .sign-in-btn:active {
   transform: translateY(0) scale(.98);
@@ -278,11 +408,11 @@ async function onSubmit () {
 .google-icon-btn:hover {
   transform: scale(1.08);
   background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(224, 168, 74, 0.4);
+  border-color: rgba(212, 166, 47, 0.4);
 }
 
 .create-account-link {
-  color: #f0c878;
+  color: #f3dfa0;
 }
 .create-account-link:hover {
   text-decoration: underline;

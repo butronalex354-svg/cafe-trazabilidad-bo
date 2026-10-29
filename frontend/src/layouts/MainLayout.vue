@@ -588,8 +588,8 @@ async function guardarPreferencias () {
 // --- Color del sistema (solo Administrador, afecta a todos) ---
 const dlgColorSistema = ref(false)
 const guardandoColor = ref(false)
-const colorSistema = ref('#e0a84a')
-const COLOR_POR_DEFECTO = '#e0a84a'
+const colorSistema = ref('#d4a62f')
+const COLOR_POR_DEFECTO = '#d4a62f'
 
 function aplicarColorSistema (hex) {
   const r = parseInt(hex.slice(1, 3), 16)

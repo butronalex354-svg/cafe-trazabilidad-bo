@@ -215,10 +215,10 @@ async function onSubmit () {
   padding: 36px 32px;
   border-radius: 18px;
   background: rgba(20, 14, 10, 0.45);
-  border: 1px solid rgba(214, 158, 46, 0.3);
+  border: 1px solid rgba(212, 166, 47, 0.3);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 0 40px rgba(214, 158, 46, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 40px rgba(212, 166, 47, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   font-family: 'Poppins', sans-serif;
   animation: cardEnter .7s cubic-bezier(.2, .8, .2, 1) both;
@@ -233,7 +233,7 @@ async function onSubmit () {
   top: -18px;
   right: -18px;
   font-size: 130px;
-  color: rgba(224, 168, 74, 0.06);
+  color: rgba(212, 166, 47, 0.06);
   transform: rotate(18deg);
   pointer-events: none;
   z-index: 0;
@@ -248,7 +248,7 @@ async function onSubmit () {
   content: '';
   position: absolute;
   inset: 14%;
-  background: radial-gradient(circle, rgba(255, 214, 140, 0.28) 0%, rgba(224, 168, 74, 0.1) 50%, transparent 75%);
+  background: radial-gradient(circle, rgba(255, 214, 140, 0.28) 0%, rgba(212, 166, 47, 0.1) 50%, transparent 75%);
   filter: blur(8px);
   z-index: -1;
   border-radius: 50%;
@@ -268,8 +268,8 @@ async function onSubmit () {
 }
 
 .gold-input :deep(.q-field__control) {
-  background: rgba(224, 168, 74, 0.06) !important;
-  border: 1px solid rgba(224, 168, 74, 0.3);
+  background: rgba(212, 166, 47, 0.06) !important;
+  border: 1px solid rgba(212, 166, 47, 0.3);
   border-radius: 8px;
   padding: 0 12px;
   height: 42px;
@@ -277,12 +277,12 @@ async function onSubmit () {
   transition: box-shadow .2s, border-color .2s;
 }
 .gold-input.q-field--focused :deep(.q-field__control) {
-  border-color: rgba(224, 168, 74, 0.9);
-  box-shadow: 0 0 12px rgba(224, 168, 74, 0.35);
+  border-color: rgba(212, 166, 47, 0.9);
+  box-shadow: 0 0 12px rgba(212, 166, 47, 0.35);
 }
 .gold-input :deep(input) {
   color: #fff6e8 !important;
-  caret-color: #f0c878;
+  caret-color: #f3dfa0;
 }
 .gold-input :deep(input::placeholder) {
   color: #8a7458;
@@ -299,23 +299,23 @@ async function onSubmit () {
 }
 
 .sign-in-btn {
-  background: linear-gradient(135deg, #e0a84a, #8a5a1e);
+  background: linear-gradient(135deg, #d4a62f, #6a5318);
   color: #1a1108;
   height: 46px;
   border-radius: 10px;
-  box-shadow: 0 0 20px rgba(224, 168, 74, 0.35);
+  box-shadow: 0 0 20px rgba(212, 166, 47, 0.35);
   transition: transform .18s ease, box-shadow .18s ease;
 }
 .sign-in-btn:hover {
   transform: translateY(-2px) scale(1.015);
-  box-shadow: 0 4px 26px rgba(224, 168, 74, 0.5);
+  box-shadow: 0 4px 26px rgba(212, 166, 47, 0.5);
 }
 .sign-in-btn:active {
   transform: translateY(0) scale(.98);
 }
 
 .create-account-link {
-  color: #f0c878;
+  color: #f3dfa0;
 }
 .create-account-link:hover {
   text-decoration: underline;
