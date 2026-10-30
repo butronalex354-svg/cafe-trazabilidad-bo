@@ -1,5 +1,5 @@
 <template>
-  <div class="login-wrapper window-height window-width">
+  <div class="login-wrapper window-height window-width" :class="{ revelado: mostrarLogin }">
     <AnimatedCafeBackground />
 
     <div class="hero-panel">
@@ -27,9 +27,20 @@
           <span>Verificación técnica y control de calidad en cada etapa</span>
         </div>
       </div>
+
+      <q-btn
+        v-if="!mostrarLogin"
+        unelevated
+        no-caps
+        label="Ingresar al sistema"
+        icon-right="arrow_forward"
+        class="cta-ingresar text-weight-bold q-mt-xl"
+        @click="mostrarLogin = true"
+      />
     </div>
 
-    <div class="form-panel flex flex-center">
+    <Transition name="panel-reveal">
+    <div v-if="mostrarLogin" class="form-panel flex flex-center">
     <div class="login-card">
       <div class="text-center q-mb-md">
         <div class="logo-frame">
@@ -106,6 +117,7 @@
       </div>
     </div>
     </div>
+    </Transition>
   </div>
 </template>
 
@@ -141,6 +153,12 @@ onMounted(() => {
     errorMsg.value = MENSAJES_ERROR_GOOGLE[error] || 'No se pudo iniciar sesión con Google.'
   }
 })
+
+// Arranca oculto (vista tipo "landing") y se revela al apretar el boton.
+// Si Google redirigio de vuelta con un error, se muestra directo el
+// formulario para que el mensaje de error no quede escondido detras de un
+// clic extra.
+const mostrarLogin = ref(!!route.query.google_error)
 
 const email = ref('')
 const password = ref('')
@@ -188,10 +206,55 @@ async function onSubmit () {
   justify-content: center;
   padding: 0 9%;
   animation: heroEnter .8s cubic-bezier(.2, .8, .2, 1) both;
+  transition: flex-basis .45s ease, padding .45s ease;
 }
 @keyframes heroEnter {
   from { opacity: 0; transform: translateX(-16px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+/* Antes de apretar "Ingresar al sistema" (vista tipo landing): el panel
+   ocupa toda la pantalla y queda centrado, no pegado a la izquierda. Solo
+   en pantalla ancha -- en celular el panel ya se ve centrado/apilado
+   siempre (ver el media query mas abajo), no hace falta este estado aparte
+   y si se aplicara aca tambien pisaria esas reglas (esta es mas especifica). */
+@media (min-width: 1024px) {
+  .login-wrapper:not(.revelado) .hero-panel {
+    flex: 1 1 100%;
+    align-items: center;
+    text-align: center;
+    padding: 0 12%;
+  }
+  .login-wrapper:not(.revelado) .hero-subtitle,
+  .login-wrapper:not(.revelado) .hero-features {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+.cta-ingresar {
+  align-self: center;
+  background: linear-gradient(135deg, #d4a62f, #6a5318);
+  color: #1a1108;
+  height: 46px;
+  padding: 0 28px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(212, 166, 47, 0.35);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.cta-ingresar:hover {
+  transform: translateY(-2px) scale(1.015);
+  box-shadow: 0 4px 26px rgba(212, 166, 47, 0.5);
+}
+
+/* Animacion de entrada de la tarjeta al revelarla (ademas de la propia
+   animacion de .login-card, cardEnter, que ya se dispara sola al montarse). */
+.panel-reveal-enter-active {
+  transition: opacity .4s ease, transform .4s cubic-bezier(.2, .8, .2, 1);
+}
+.panel-reveal-enter-from {
+  opacity: 0;
+  transform: translateX(24px);
 }
 
 .hero-logo-wrap {
