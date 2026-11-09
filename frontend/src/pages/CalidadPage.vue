@@ -337,6 +337,7 @@ import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useProduccionStore } from '@/stores/produccion'
 import { useCalidadStore } from '@/stores/calidad'
+import { urlDelBackend } from '@/utils/backend'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -376,7 +377,7 @@ const fechaUltimoDiagnostico = computed(() => {
 })
 
 function urlCompleta (rutaRelativa) {
-  return `http://${window.location.hostname}:8000${rutaRelativa}`
+  return urlDelBackend(rutaRelativa)
 }
 
 function formatearFecha (fecha) {

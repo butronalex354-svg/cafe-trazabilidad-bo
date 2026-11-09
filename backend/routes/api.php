@@ -33,70 +33,81 @@ Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])->
 Route::get('/trazabilidad/{codigo}', [TrazabilidadController::class, 'porCodigo']);
 Route::post('/trazabilidad/{codigo}/reclamos', [TrazabilidadController::class, 'registrarReclamo']);
 
-Route::middleware('auth:sanctum')->group(function () {
+// cuenta.activa: corta la sesion si el Administrador desactivo la cuenta.
+// rol:...: guardia central de roles (app/Http/Middleware/VerificarRol.php).
+Route::middleware(['auth:sanctum', 'cuenta.activa'])->group(function () {
+    // Comunes a los 3 roles
     Route::get('/me', [AuthController::class, 'me']);
     Route::put('/me', [AuthController::class, 'actualizarCuenta']);
     Route::put('/me/preferencias', [AuthController::class, 'actualizarPreferencias']);
-    Route::get('/configuracion', [ConfiguracionController::class, 'mostrar']);
-    Route::put('/configuracion', [ConfiguracionController::class, 'actualizar']);
-    Route::get('/catalogos/variedades-cafe', [CatalogoController::class, 'variedadesCafe']);
-    Route::post('/administrador/catalogos/variedades-cafe', [CatalogoController::class, 'crearVariedadCafe']);
-    Route::put('/administrador/catalogos/variedades-cafe/{id}', [CatalogoController::class, 'actualizarVariedadCafe']);
     Route::put('/me/password', [AuthController::class, 'cambiarPassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/configuracion', [ConfiguracionController::class, 'mostrar']);
+    Route::get('/catalogos/variedades-cafe', [CatalogoController::class, 'variedadesCafe']);
 
-    // Modulo 1 - Produccion (RF01-03)
-    Route::get('/productor/perfil', [ProductorController::class, 'show']);
-    Route::put('/productor/perfil', [ProductorController::class, 'update']);
+    Route::middleware('rol:productor')->group(function () {
+        // Modulo 1 - Produccion (RF01-03)
+        Route::get('/productor/perfil', [ProductorController::class, 'show']);
+        Route::put('/productor/perfil', [ProductorController::class, 'update']);
 
-    Route::apiResource('parcelas', ParcelaController::class)->except(['show']);
-    Route::apiResource('cosechas', CosechaController::class)->except(['show']);
+        Route::apiResource('parcelas', ParcelaController::class)->except(['show']);
+        Route::apiResource('cosechas', CosechaController::class)->except(['show']);
 
-    // Modulo 2 - Monitoreo (RF04-05)
-    Route::get('/parcelas/{id}/clima', [ClimaController::class, 'porParcela']);
-    Route::get('/parcelas/{id}/recomendaciones', [RecomendacionController::class, 'porParcela']);
-    Route::apiResource('observaciones', ObservacionController::class)->only(['index', 'store', 'update', 'destroy']);
+        // Modulo 2 - Monitoreo (RF04-05)
+        Route::get('/parcelas/{id}/clima', [ClimaController::class, 'porParcela']);
+        Route::get('/parcelas/{id}/recomendaciones', [RecomendacionController::class, 'porParcela']);
+        Route::apiResource('observaciones', ObservacionController::class)->only(['index', 'store', 'update', 'destroy']);
 
-    // Modulo 4 - Calidad (RF06-10)
-    Route::get('/diagnosticos', [DiagnosticoController::class, 'index']);
-    Route::post('/diagnosticos', [DiagnosticoController::class, 'store']);
-    Route::delete('/diagnosticos/{id}', [DiagnosticoController::class, 'destroy']);
-    Route::get('/alertas', [AlertaController::class, 'index']);
-    Route::put('/alertas/{id}/leida', [AlertaController::class, 'marcarLeida']);
-    Route::put('/alertas/{id}/resuelta', [AlertaController::class, 'marcarResuelta']);
-    Route::apiResource('control-calidad', ControlCalidadController::class)->only(['index', 'store', 'update', 'destroy']);
+        // Modulo 4 - Calidad (RF06-10)
+        Route::get('/diagnosticos', [DiagnosticoController::class, 'index']);
+        Route::post('/diagnosticos', [DiagnosticoController::class, 'store']);
+        Route::delete('/diagnosticos/{id}', [DiagnosticoController::class, 'destroy']);
+        Route::get('/alertas', [AlertaController::class, 'index']);
+        Route::put('/alertas/{id}/leida', [AlertaController::class, 'marcarLeida']);
+        Route::put('/alertas/{id}/resuelta', [AlertaController::class, 'marcarResuelta']);
+        Route::apiResource('control-calidad', ControlCalidadController::class)->only(['index', 'store', 'update', 'destroy']);
 
-    // Modulo 5 - Procesamiento (RF11-12)
-    Route::apiResource('etapas-procesamiento', EtapaProcesamientoController::class)->only(['index', 'store', 'update', 'destroy']);
+        // Modulo 5 - Procesamiento (RF11-12)
+        Route::apiResource('etapas-procesamiento', EtapaProcesamientoController::class)->only(['index', 'store', 'update', 'destroy']);
 
-    // Modulo 6 - Inventario (RF13)
-    Route::apiResource('inventario', InventarioController::class)->only(['index', 'update']);
-    Route::put('/inventario/{id}/limites', [InventarioController::class, 'definirLimites']);
-    Route::post('/inventario/{id}/salida', [InventarioController::class, 'registrarSalida']);
+        // Modulo 6 - Inventario (RF13)
+        Route::apiResource('inventario', InventarioController::class)->only(['index', 'update']);
+        Route::put('/inventario/{id}/limites', [InventarioController::class, 'definirLimites']);
+        Route::post('/inventario/{id}/salida', [InventarioController::class, 'registrarSalida']);
 
-    // Modulo 6 - Verificacion (RF14-17)
-    Route::post('/cosechas/{id}/solicitar-verificacion', [VerificacionController::class, 'solicitar']);
-    Route::get('/verificador/solicitudes', [VerificacionController::class, 'index']);
-    Route::get('/verificador/solicitudes/{id}', [VerificacionController::class, 'detalle']);
-    Route::put('/verificador/solicitudes/{id}', [VerificacionController::class, 'resolver']);
-    Route::get('/verificador/mi-historial', [VerificacionController::class, 'miHistorial']);
-    Route::get('/productor/historial-verificaciones', [VerificacionController::class, 'historialProductor']);
-    Route::put('/verificador/parcelas/{id}/parametros-suelo', [VerificacionController::class, 'definirParametrosSuelo']);
+        // Modulo 6 - Verificacion: lo que pide el productor
+        Route::post('/cosechas/{id}/solicitar-verificacion', [VerificacionController::class, 'solicitar']);
+        Route::get('/productor/historial-verificaciones', [VerificacionController::class, 'historialProductor']);
+    });
+
+    // Modulo 6 - Verificacion (RF14-17): rol Verificador
+    Route::middleware('rol:verificador')->group(function () {
+        Route::get('/verificador/solicitudes', [VerificacionController::class, 'index']);
+        Route::get('/verificador/solicitudes/{id}', [VerificacionController::class, 'detalle']);
+        Route::put('/verificador/solicitudes/{id}', [VerificacionController::class, 'resolver']);
+        Route::get('/verificador/mi-historial', [VerificacionController::class, 'miHistorial']);
+        Route::put('/verificador/parcelas/{id}/parametros-suelo', [VerificacionController::class, 'definirParametrosSuelo']);
+    });
 
     // Administrador (RF23 exportacion, RF24-25 usuarios/roles, RF27 auditoria parcial)
-    Route::get('/administrador/usuarios', [AdministradorController::class, 'usuarios']);
-    Route::post('/administrador/usuarios', [AdministradorController::class, 'crearUsuario']);
-    Route::put('/administrador/usuarios/{id}/aprobar', [AdministradorController::class, 'aprobarUsuario']);
-    Route::put('/administrador/usuarios/{id}/rechazar', [AdministradorController::class, 'rechazarUsuario']);
-    Route::put('/administrador/usuarios/{id}/desactivar', [AdministradorController::class, 'desactivarUsuario']);
-    Route::put('/administrador/usuarios/{id}/reactivar', [AdministradorController::class, 'reactivarUsuario']);
-    Route::get('/administrador/reportes', [AdministradorController::class, 'reportes']);
-    Route::get('/administrador/auditoria', [AdministradorController::class, 'auditoria']);
-    Route::get('/administrador/lotes-para-exportar', [AdministradorController::class, 'lotesParaExportar']);
-    Route::put('/administrador/lotes/{id}/autorizar-exportacion', [AdministradorController::class, 'autorizarExportacion']);
-    Route::get('/administrador/lotes-exportados', [AdministradorController::class, 'lotesExportados']);
-    Route::post('/administrador/lotes/{id}/envio', [AdministradorController::class, 'agregarEstadoEnvio']);
-    Route::get('/administrador/reclamos', [AdministradorController::class, 'reclamos']);
-    Route::put('/administrador/reclamos/{id}/atender', [AdministradorController::class, 'atenderReclamo']);
-    Route::get('/administrador/lotes/buscar', [AdministradorController::class, 'buscarLotes']);
+    Route::middleware('rol:administrador')->group(function () {
+        Route::put('/configuracion', [ConfiguracionController::class, 'actualizar']);
+        Route::post('/administrador/catalogos/variedades-cafe', [CatalogoController::class, 'crearVariedadCafe']);
+        Route::put('/administrador/catalogos/variedades-cafe/{id}', [CatalogoController::class, 'actualizarVariedadCafe']);
+        Route::get('/administrador/usuarios', [AdministradorController::class, 'usuarios']);
+        Route::post('/administrador/usuarios', [AdministradorController::class, 'crearUsuario']);
+        Route::put('/administrador/usuarios/{id}/aprobar', [AdministradorController::class, 'aprobarUsuario']);
+        Route::put('/administrador/usuarios/{id}/rechazar', [AdministradorController::class, 'rechazarUsuario']);
+        Route::put('/administrador/usuarios/{id}/desactivar', [AdministradorController::class, 'desactivarUsuario']);
+        Route::put('/administrador/usuarios/{id}/reactivar', [AdministradorController::class, 'reactivarUsuario']);
+        Route::get('/administrador/reportes', [AdministradorController::class, 'reportes']);
+        Route::get('/administrador/auditoria', [AdministradorController::class, 'auditoria']);
+        Route::get('/administrador/lotes-para-exportar', [AdministradorController::class, 'lotesParaExportar']);
+        Route::put('/administrador/lotes/{id}/autorizar-exportacion', [AdministradorController::class, 'autorizarExportacion']);
+        Route::get('/administrador/lotes-exportados', [AdministradorController::class, 'lotesExportados']);
+        Route::post('/administrador/lotes/{id}/envio', [AdministradorController::class, 'agregarEstadoEnvio']);
+        Route::get('/administrador/reclamos', [AdministradorController::class, 'reclamos']);
+        Route::put('/administrador/reclamos/{id}/atender', [AdministradorController::class, 'atenderReclamo']);
+        Route::get('/administrador/lotes/buscar', [AdministradorController::class, 'buscarLotes']);
+    });
 });

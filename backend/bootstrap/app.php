@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Middleware\CuentaActiva;
+use App\Http\Middleware\VerificarRol;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\HandleCors;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,8 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
-            \Illuminate\Http\Middleware\HandleCors::class,
+            HandleCors::class,
         ]);
+
+        $middleware->alias([
+            'rol' => VerificarRol::class,
+            'cuenta.activa' => CuentaActiva::class,
+        ]);
+
+        // En la nube (Railway) las peticiones llegan por un proxy con HTTPS:
+        // asi Laravel sabe que la direccion real es https.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

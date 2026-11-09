@@ -126,6 +126,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/auth'
+import { BACKEND_URL } from '@/utils/backend'
 import logoCafeAndino from '@/assets/logo-cafe-andino.png'
 import AnimatedCafeBackground from '@/components/AnimatedCafeBackground.vue'
 
@@ -137,7 +138,7 @@ const $q = useQuasar()
 function onGoogleClick () {
   // Navegacion de pagina completa (no axios): el backend redirige a Google
   // y, al volver, redirige a /auth/google/callback con el token.
-  window.location.href = `http://${window.location.hostname}:8000/api/auth/google/redirect`
+  window.location.href = `${BACKEND_URL}/api/auth/google/redirect`
 }
 
 const MENSAJES_ERROR_GOOGLE = {
@@ -152,13 +153,17 @@ onMounted(() => {
   if (error) {
     errorMsg.value = MENSAJES_ERROR_GOOGLE[error] || 'No se pudo iniciar sesión con Google.'
   }
+  // Viene del interceptor de axios (boot/axios.js) cuando la sesion se corto.
+  if (route.query.sesion === 'cerrada') {
+    errorMsg.value = 'Tu sesión se cerró (venció o tu cuenta fue desactivada). Vuelve a ingresar.'
+  }
 })
 
 // Arranca oculto (vista tipo "landing") y se revela al apretar el boton.
 // Si Google redirigio de vuelta con un error, se muestra directo el
 // formulario para que el mensaje de error no quede escondido detras de un
 // clic extra.
-const mostrarLogin = ref(!!route.query.google_error)
+const mostrarLogin = ref(!!route.query.google_error || route.query.sesion === 'cerrada')
 
 const email = ref('')
 const password = ref('')

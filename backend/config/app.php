@@ -123,4 +123,14 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    | Primer administrador del sistema, lo crea "php artisan db:seed"
+    | (database/seeders/DatabaseSeeder.php).
+    */
+    'admin_inicial' => [
+        'nombre' => env('ADMIN_NOMBRE', 'Administrador'),
+        'email' => env('ADMIN_EMAIL'),
+        'password' => env('ADMIN_PASSWORD'),
+    ],
+
 ];

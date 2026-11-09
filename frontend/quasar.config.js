@@ -34,8 +34,20 @@ export default defineConfig((/* ctx */) => {
       'material-icons', // optional, you are not bound to it
     ],
 
+    // Variables para index.html: la direccion del backend en la nube se agrega
+    // a la politica de seguridad (CSP) para que el navegador permita llamarlo.
+    htmlVariables: {
+      apiUrl: (process.env.API_URL || '').replace(/\/+$/, '')
+    },
+
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#build
     build: {
+      // API_URL (Railway) -> import.meta.env.API_URL dentro del codigo (src/utils/backend.js).
+      // Vacio en la compu: se usa el backend local en el puerto 8000.
+      defineEnv: {
+        API_URL: process.env.API_URL || ''
+      },
+
       target: {
         // browser: 'baseline-widely-available',
         // node: 'node22'

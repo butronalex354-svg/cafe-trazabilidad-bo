@@ -262,6 +262,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useProduccionStore } from '@/stores/produccion'
 import { useMonitoreoStore } from '@/stores/monitoreo'
+import { urlDelBackend } from '@/utils/backend'
 
 const $q = useQuasar()
 const produccion = useProduccionStore()
@@ -368,7 +369,7 @@ function verDetalleDia (dia) {
 
 function urlCompleta (fotoUrl) {
   // foto_url viene como "/storage/observaciones/xxx.jpg" (ruta relativa del backend)
-  return `http://${window.location.hostname}:8000${fotoUrl}`
+  return urlDelBackend(fotoUrl)
 }
 
 // --- Ver la foto de una observacion en grande, con zoom (dedos o botones

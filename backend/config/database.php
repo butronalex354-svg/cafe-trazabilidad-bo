@@ -133,6 +133,15 @@ return [
     ],
 
     /*
+    | Respaldo de la base (php artisan respaldo:bd). En Windows con XAMPP:
+    | MYSQLDUMP_PATH=C:/xampp2/mysql/bin/mysqldump.exe
+    */
+    'respaldo' => [
+        'mysqldump' => env('MYSQLDUMP_PATH', 'mysqldump'),
+        'conservar' => (int) env('RESPALDO_CONSERVAR', 14),
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Redis Databases
     |--------------------------------------------------------------------------

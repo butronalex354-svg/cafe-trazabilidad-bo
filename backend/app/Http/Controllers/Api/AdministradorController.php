@@ -180,8 +180,17 @@ class AdministradorController extends Controller
         $this->verificarAdministrador($request);
 
         $usuario = User::findOrFail($id);
+
+        // Si el administrador se desactivara a si mismo, el sistema podria
+        // quedarse sin nadie que pueda reactivar cuentas.
+        if ($usuario->id === $request->user()->id) {
+            return response()->json(['message' => 'No puedes desactivar tu propia cuenta.'], 422);
+        }
+
         $usuario->estado = 'desactivado';
         $usuario->save();
+        // Cierra sus sesiones abiertas de inmediato (no espera a que venza el token).
+        $usuario->tokens()->delete();
 
         Auditoria::registrar($request->user()->id, $usuario->id, 'desactivar_usuario', "Desactivó la cuenta de {$usuario->nombre} ({$usuario->email}).");
 
