@@ -49,7 +49,7 @@
             borderless
             dark
             class="gold-input"
-            :rules="[val => (val && val.length >= 6) || 'Mínimo 6 caracteres']"
+            :rules="[reglaPassword]"
           >
             <template v-slot:append>
               <q-icon
@@ -156,6 +156,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore } from '@/stores/auth'
+import { reglaPassword, mensajeDeError } from '@/utils/validacionPassword'
 import logoCafeAndino from '@/assets/logo-cafe-andino.png'
 import AnimatedCafeBackground from '@/components/AnimatedCafeBackground.vue'
 
@@ -192,7 +193,7 @@ async function onSubmit () {
     $q.notify({ message: mensaje || 'Cuenta creada. Espera la aprobación de un administrador.', color: 'positive', icon: 'check_circle', timeout: 6000 })
     router.push('/login')
   } catch (err) {
-    errorMsg.value = err.response?.data?.message || 'No se pudo crear la cuenta.'
+    errorMsg.value = mensajeDeError(err, 'No se pudo crear la cuenta.')
   } finally {
     cargando.value = false
   }

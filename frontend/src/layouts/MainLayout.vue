@@ -206,7 +206,7 @@
           <div class="text-subtitle2 text-brown-9 q-mb-sm">Cambiar contraseña</div>
           <div class="q-gutter-md">
             <q-input v-model="formPassword.actual" label="Contraseña actual" type="password" outlined dense bg-color="white" />
-            <q-input v-model="formPassword.nueva" label="Contraseña nueva" type="password" outlined dense bg-color="white" hint="Mínimo 6 caracteres" />
+            <q-input v-model="formPassword.nueva" label="Contraseña nueva" type="password" outlined dense bg-color="white" :hint="MENSAJE_PASSWORD" :rules="[reglaPassword]" lazy-rules />
             <q-input v-model="formPassword.confirmacion" label="Confirmar contraseña nueva" type="password" outlined dense bg-color="white" />
           </div>
         </q-card-section>
@@ -289,6 +289,7 @@ import { useCalidadStore } from '@/stores/calidad'
 import { useVerificacionStore } from '@/stores/verificacion'
 import { useAdministradorStore } from '@/stores/administrador'
 import { api } from '@/boot/axios'
+import { reglaPassword, passwordValida, MENSAJE_PASSWORD, mensajeDeError } from '@/utils/validacionPassword'
 import logoCafeAndino from '@/assets/logo-cafe-andino-badge.png'
 import logoCompleto from '@/assets/logo-cafe-andino.png'
 
@@ -538,6 +539,10 @@ async function guardarPassword () {
     $q.notify({ type: 'negative', message: 'Completa los 3 campos de contraseña.' })
     return
   }
+  if (!passwordValida(nueva)) {
+    $q.notify({ type: 'negative', message: MENSAJE_PASSWORD + '.' })
+    return
+  }
   if (nueva !== confirmacion) {
     $q.notify({ type: 'negative', message: 'La confirmación no coincide con la contraseña nueva.' })
     return
@@ -548,7 +553,7 @@ async function guardarPassword () {
     $q.notify({ type: 'positive', message: mensaje || 'Contraseña actualizada.' })
     formPassword.value = { actual: '', nueva: '', confirmacion: '' }
   } catch (err) {
-    $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudo cambiar la contraseña.' })
+    $q.notify({ type: 'negative', message: mensajeDeError(err, 'No se pudo cambiar la contraseña.') })
   } finally {
     cambiandoPassword.value = false
   }

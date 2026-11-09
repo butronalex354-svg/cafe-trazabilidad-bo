@@ -149,7 +149,7 @@
         <q-card-section class="q-gutter-md">
           <q-input v-model="nuevoUsuario.nombre" label="Nombre completo" outlined dense bg-color="white" />
           <q-input v-model="nuevoUsuario.email" label="Email" type="email" outlined dense bg-color="white" />
-          <q-input v-model="nuevoUsuario.password" label="Contraseña" type="password" outlined dense bg-color="white" />
+          <q-input v-model="nuevoUsuario.password" label="Contraseña" type="password" outlined dense bg-color="white" :rules="[reglaPassword]" lazy-rules />
           <q-select
             v-model="nuevoUsuario.rol"
             :options="[{ label: 'Verificador', value: 'verificador' }, { label: 'Administrador', value: 'administrador' }]"
@@ -174,6 +174,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdministradorStore } from '@/stores/administrador'
+import { reglaPassword, passwordValida, MENSAJE_PASSWORD, mensajeDeError } from '@/utils/validacionPassword'
 
 const $q = useQuasar()
 const admin = useAdministradorStore()
@@ -203,13 +204,17 @@ async function crearCuenta () {
     $q.notify({ type: 'negative', message: 'Completa nombre, email y contraseña.' })
     return
   }
+  if (!passwordValida(nuevoUsuario.password)) {
+    $q.notify({ type: 'negative', message: MENSAJE_PASSWORD + '.' })
+    return
+  }
   creando.value = true
   try {
     await admin.crearUsuario({ ...nuevoUsuario })
     $q.notify({ type: 'positive', message: 'Cuenta creada correctamente.' })
     dialogoCrear.value = false
   } catch (err) {
-    $q.notify({ type: 'negative', message: err.response?.data?.message || 'No se pudo crear la cuenta.' })
+    $q.notify({ type: 'negative', message: mensajeDeError(err, 'No se pudo crear la cuenta.') })
   } finally {
     creando.value = false
   }
