@@ -55,7 +55,7 @@
           >
             <template v-slot:append>
               <q-icon
-                :name="showPassword ? 'visibility_off' : 'visibility'"
+                :name="showPassword ? 'visibility' : 'visibility_off'"
                 color="amber-4"
                 class="cursor-pointer"
                 @click="showPassword = !showPassword"

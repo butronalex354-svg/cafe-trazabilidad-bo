@@ -207,17 +207,17 @@
           <div class="q-gutter-md">
             <q-input v-model="formPassword.actual" label="Contraseña actual" :type="verPassword.actual ? 'text' : 'password'" autocomplete="current-password" outlined dense bg-color="white">
               <template v-slot:append>
-                <q-icon :name="verPassword.actual ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="verPassword.actual = !verPassword.actual" />
+                <q-icon :name="verPassword.actual ? 'visibility' : 'visibility_off'" class="cursor-pointer" @click="verPassword.actual = !verPassword.actual" />
               </template>
             </q-input>
             <q-input v-model="formPassword.nueva" label="Contraseña nueva" :type="verPassword.nueva ? 'text' : 'password'" autocomplete="new-password" outlined dense bg-color="white" :hint="MENSAJE_PASSWORD" :rules="[reglaPassword]" lazy-rules>
               <template v-slot:append>
-                <q-icon :name="verPassword.nueva ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="verPassword.nueva = !verPassword.nueva" />
+                <q-icon :name="verPassword.nueva ? 'visibility' : 'visibility_off'" class="cursor-pointer" @click="verPassword.nueva = !verPassword.nueva" />
               </template>
             </q-input>
             <q-input v-model="formPassword.confirmacion" label="Confirmar contraseña nueva" :type="verPassword.confirmacion ? 'text' : 'password'" autocomplete="new-password" outlined dense bg-color="white">
               <template v-slot:append>
-                <q-icon :name="verPassword.confirmacion ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="verPassword.confirmacion = !verPassword.confirmacion" />
+                <q-icon :name="verPassword.confirmacion ? 'visibility' : 'visibility_off'" class="cursor-pointer" @click="verPassword.confirmacion = !verPassword.confirmacion" />
               </template>
             </q-input>
           </div>

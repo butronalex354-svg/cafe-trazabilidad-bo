@@ -162,7 +162,7 @@
           >
             <template v-slot:append>
               <q-icon
-                :name="verPasswordNuevo ? 'visibility_off' : 'visibility'"
+                :name="verPasswordNuevo ? 'visibility' : 'visibility_off'"
                 class="cursor-pointer"
                 @click="verPasswordNuevo = !verPasswordNuevo"
               />
