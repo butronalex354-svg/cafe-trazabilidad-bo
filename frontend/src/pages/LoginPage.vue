@@ -1,5 +1,5 @@
 <template>
-  <div class="login-wrapper window-height window-width" :class="{ revelado: mostrarLogin }">
+  <div class="login-wrapper window-width" :class="{ revelado: mostrarLogin }">
     <AnimatedCafeBackground />
 
     <div class="hero-panel">
@@ -190,6 +190,9 @@ async function onSubmit () {
 .login-wrapper {
   position: relative;
   overflow: hidden;
+  /* Alto minimo de la pantalla, pero crece si el contenido no entra
+     (con alto fijo, en pantallas bajas el formulario quedaba cortado) */
+  min-height: 100vh;
   display: flex;
   flex-direction: row;
   background: radial-gradient(ellipse at 50% 0%, #241812 0%, #140d09 45%, #050302 100%);

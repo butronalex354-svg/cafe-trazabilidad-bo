@@ -1,5 +1,5 @@
 <template>
-  <div class="login-wrapper window-height window-width flex flex-center">
+  <div class="login-wrapper window-width flex flex-center">
     <AnimatedCafeBackground />
 
     <div class="login-card">
@@ -30,6 +30,7 @@
           <q-input
             v-model="email"
             type="email"
+            autocomplete="off"
             placeholder="usuario@cafe.bo"
             dense
             borderless
@@ -44,6 +45,7 @@
           <q-input
             v-model="password"
             :type="showPassword ? 'text' : 'password'"
+            autocomplete="new-password"
             placeholder="Crea una contraseña"
             dense
             borderless
@@ -67,6 +69,7 @@
           <q-input
             v-model="passwordConfirmation"
             :type="showPassword ? 'text' : 'password'"
+            autocomplete="new-password"
             placeholder="Repite tu contraseña"
             dense
             borderless
@@ -204,6 +207,10 @@ async function onSubmit () {
 .login-wrapper {
   position: relative;
   overflow: hidden;
+  /* Alto minimo de la pantalla, pero crece si el formulario es mas largo
+     (antes tenia alto fijo y lo de abajo quedaba cortado sin poder bajar) */
+  min-height: 100vh;
+  padding: 40px 0;
   background: radial-gradient(ellipse at 50% 0%, #241812 0%, #140d09 45%, #050302 100%);
   font-family: 'Poppins', sans-serif;
 }
