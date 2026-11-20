@@ -148,8 +148,26 @@
         </q-card-section>
         <q-card-section class="q-gutter-md">
           <q-input v-model="nuevoUsuario.nombre" label="Nombre completo" outlined dense bg-color="white" />
-          <q-input v-model="nuevoUsuario.email" label="Email" type="email" outlined dense bg-color="white" />
-          <q-input v-model="nuevoUsuario.password" label="Contraseña" type="password" outlined dense bg-color="white" :rules="[reglaPassword]" lazy-rules />
+          <q-input v-model="nuevoUsuario.email" label="Email" type="email" autocomplete="off" outlined dense bg-color="white" />
+          <q-input
+            v-model="nuevoUsuario.password"
+            label="Contraseña"
+            :type="verPasswordNuevo ? 'text' : 'password'"
+            autocomplete="new-password"
+            outlined
+            dense
+            bg-color="white"
+            :rules="[reglaPassword]"
+            lazy-rules
+          >
+            <template v-slot:append>
+              <q-icon
+                :name="verPasswordNuevo ? 'visibility_off' : 'visibility'"
+                class="cursor-pointer"
+                @click="verPasswordNuevo = !verPasswordNuevo"
+              />
+            </template>
+          </q-input>
           <q-select
             v-model="nuevoUsuario.rol"
             :options="[{ label: 'Verificador', value: 'verificador' }, { label: 'Administrador', value: 'administrador' }]"
@@ -190,12 +208,14 @@ const opcionesRol = [
 const dialogoCrear = ref(false)
 const creando = ref(false)
 const nuevoUsuario = reactive({ nombre: '', email: '', password: '', rol: 'verificador' })
+const verPasswordNuevo = ref(false)
 
 function abrirDialogoCrear () {
   nuevoUsuario.nombre = ''
   nuevoUsuario.email = ''
   nuevoUsuario.password = ''
   nuevoUsuario.rol = 'verificador'
+  verPasswordNuevo.value = false
   dialogoCrear.value = true
 }
 

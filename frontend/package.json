@@ -1,8 +1,8 @@
 {
   "name": "cafe-trazabilidad-frontend",
   "version": "0.0.1",
-  "description": "A Quasar Project",
-  "productName": "Quasar App",
+  "description": "Sistema web de trazabilidad del café boliviano con inteligencia artificial",
+  "productName": "CaféTrace Bolivia",
   "author": "Alex Butron",
   "type": "module",
   "private": true,
