@@ -220,6 +220,7 @@ import { useQuasar } from 'quasar'
 import { useRoute } from 'vue-router'
 import { useProduccionStore } from '@/stores/produccion'
 import { api } from '@/boot/axios'
+import { aFecha } from '@/utils/fechas'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -360,7 +361,7 @@ function copiarEnlace () {
 
 function formatearFecha (fecha) {
   if (!fecha) return ''
-  return new Date(fecha).toLocaleDateString('es-BO')
+  return aFecha(fecha).toLocaleDateString('es-BO')
 }
 
 onMounted(async () => {

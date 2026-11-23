@@ -143,6 +143,7 @@ import { useQuasar } from 'quasar'
 import { api } from '@/boot/axios'
 import ParcelaMapView from '@/components/ParcelaMapView.vue'
 import logoCafeAndino from '@/assets/logo-cafe-andino-badge.png'
+import { aFecha } from '@/utils/fechas'
 
 const route = useRoute()
 const $q = useQuasar()
@@ -167,7 +168,7 @@ const iconoEnvio = (estado) => iconosEnvio[estado] || 'local_shipping'
 
 function formatearFecha (fecha) {
   if (!fecha) return ''
-  return new Date(fecha).toLocaleDateString('es-BO')
+  return aFecha(fecha).toLocaleDateString('es-BO')
 }
 
 async function cargarLote () {

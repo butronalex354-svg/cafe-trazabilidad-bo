@@ -115,6 +115,7 @@
 import { ref, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdministradorStore } from '@/stores/administrador'
+import { aFecha, hoyISO } from '@/utils/fechas'
 
 const $q = useQuasar()
 const admin = useAdministradorStore()
@@ -155,18 +156,18 @@ function iconoEstado (estado) {
 }
 function formatearFecha (fecha) {
   if (!fecha) return ''
-  return new Date(fecha).toLocaleDateString('es-BO')
+  return aFecha(fecha).toLocaleDateString('es-BO')
 }
 
 const dlgEnvio = ref(false)
 const guardandoEnvio = ref(false)
 const loteSeleccionado = ref(null)
-const formEnvio = ref({ estado: 'listo_transporte', fecha: new Date().toISOString().slice(0, 10), nota: '' })
+const formEnvio = ref({ estado: 'listo_transporte', fecha: hoyISO(), nota: '' })
 
 function abrirDialogoEnvio (c) {
   loteSeleccionado.value = c
   const siguiente = { null: 'listo_transporte', listo_transporte: 'en_transito', en_transito: 'en_aduana', en_aduana: 'entregado' }
-  formEnvio.value = { estado: siguiente[ultimoEstado(c)] || 'listo_transporte', fecha: new Date().toISOString().slice(0, 10), nota: '' }
+  formEnvio.value = { estado: siguiente[ultimoEstado(c)] || 'listo_transporte', fecha: hoyISO(), nota: '' }
   dlgEnvio.value = true
 }
 

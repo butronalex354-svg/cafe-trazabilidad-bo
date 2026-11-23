@@ -152,6 +152,7 @@
 import { ref, onMounted } from 'vue'
 import { useAdministradorStore } from '@/stores/administrador'
 import ParcelaMapView from '@/components/ParcelaMapView.vue'
+import { aFecha } from '@/utils/fechas'
 
 const admin = useAdministradorStore()
 
@@ -197,7 +198,7 @@ function abrirDetalle (lote) {
 
 function formatearFecha (fecha) {
   if (!fecha) return ''
-  return new Date(fecha).toLocaleDateString('es-BO')
+  return aFecha(fecha).toLocaleDateString('es-BO')
 }
 
 function buscar () {

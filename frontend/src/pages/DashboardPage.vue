@@ -98,6 +98,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useProduccionStore } from '@/stores/produccion'
+import { aFecha } from '@/utils/fechas'
 
 const auth = useAuthStore()
 const produccion = useProduccionStore()
@@ -126,7 +127,7 @@ const totalKg = computed(() => {
 const ultimaCosechaFecha = computed(() => {
   if (produccion.cosechas.length === 0) return '—'
   const masReciente = [...produccion.cosechas].sort((a, b) => (a.fecha < b.fecha ? 1 : -1))[0]
-  return new Date(masReciente.fecha).toLocaleDateString('es-BO')
+  return aFecha(masReciente.fecha).toLocaleDateString('es-BO')
 })
 
 const parcelasSinCosechas = computed(() => produccion.parcelas.filter(p => !p.cosechas_count))

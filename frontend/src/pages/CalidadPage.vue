@@ -338,6 +338,7 @@ import { useQuasar } from 'quasar'
 import { useProduccionStore } from '@/stores/produccion'
 import { useCalidadStore } from '@/stores/calidad'
 import { urlDelBackend } from '@/utils/backend'
+import { aFecha } from '@/utils/fechas'
 
 const $q = useQuasar()
 const route = useRoute()
@@ -382,7 +383,7 @@ function urlCompleta (rutaRelativa) {
 
 function formatearFecha (fecha) {
   if (!fecha) return ''
-  return new Date(fecha).toLocaleDateString('es-BO')
+  return aFecha(fecha).toLocaleDateString('es-BO')
 }
 
 function etiquetaResultado (resultado) {

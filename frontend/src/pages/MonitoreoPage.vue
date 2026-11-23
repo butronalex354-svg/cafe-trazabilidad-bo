@@ -263,6 +263,7 @@ import { useQuasar } from 'quasar'
 import { useProduccionStore } from '@/stores/produccion'
 import { useMonitoreoStore } from '@/stores/monitoreo'
 import { urlDelBackend } from '@/utils/backend'
+import { aFecha } from '@/utils/fechas'
 
 const $q = useQuasar()
 const produccion = useProduccionStore()
@@ -339,17 +340,17 @@ function colorRecomendacion (tipo) {
 
 function formatearFecha (fecha) {
   if (!fecha) return ''
-  return new Date(fecha).toLocaleDateString('es-BO')
+  return aFecha(fecha).toLocaleDateString('es-BO')
 }
 
 function formatearDiaCorto (fecha) {
   if (!fecha) return ''
-  return new Date(fecha).toLocaleDateString('es-BO', { weekday: 'short', day: 'numeric' })
+  return aFecha(fecha).toLocaleDateString('es-BO', { weekday: 'short', day: 'numeric' })
 }
 
 function formatearDiaLargo (fecha) {
   if (!fecha) return ''
-  const texto = new Date(fecha).toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' })
+  const texto = aFecha(fecha).toLocaleDateString('es-BO', { weekday: 'long', day: 'numeric', month: 'long' })
   return texto.charAt(0).toUpperCase() + texto.slice(1)
 }
 

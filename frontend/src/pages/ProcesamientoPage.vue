@@ -115,6 +115,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useProduccionStore } from '@/stores/produccion'
 import { useProcesamientoStore } from '@/stores/procesamiento'
+import { aFecha } from '@/utils/fechas'
 
 const $q = useQuasar()
 const produccion = useProduccionStore()
@@ -166,7 +167,7 @@ const opcionesEtapaPendiente = computed(() =>
 
 function formatearFecha (fecha) {
   if (!fecha) return ''
-  return new Date(fecha).toLocaleDateString('es-BO')
+  return aFecha(fecha).toLocaleDateString('es-BO')
 }
 
 async function cargarLotesDeParcela (parcelaId) {
