@@ -67,8 +67,10 @@
           <q-card-section>
             <div class="text-subtitle2 text-brown-8 q-mb-xs">Origen (ubicación de la parcela)</div>
             <ParcelaMapView
-              v-if="verificacion.detalle.verificacion.cosecha.parcela.ubicacion"
+              v-if="verificacion.detalle.verificacion.cosecha.parcela.ubicacion || verificacion.detalle.verificacion.cosecha.parcela.poligono"
               :ubicacion="verificacion.detalle.verificacion.cosecha.parcela.ubicacion"
+              :poligono="verificacion.detalle.verificacion.cosecha.parcela.poligono"
+              :hectareas="verificacion.detalle.verificacion.cosecha.parcela.tamano_terreno"
               :etiqueta="verificacion.detalle.verificacion.cosecha.parcela.nombre_parcela"
               :height="160"
               fill

@@ -37,6 +37,38 @@ class ProduccionTest extends TestCase
             ->assertJsonCount(1);
     }
 
+    public function test_parcela_guarda_el_borde_dibujado_y_sale_en_la_pagina_publica_del_lote(): void
+    {
+        $usuario = $this->productorAutenticado();
+        $borde = [[-15.8160, -67.5672], [-15.8160, -67.5661], [-15.8172, -67.5660], [-15.8173, -67.5671]];
+
+        $id = $this->actingAs($usuario, 'sanctum')
+            ->postJson('/api/parcelas', [
+                'nombre_parcela' => 'Parcela con borde',
+                'ubicacion' => '-15.8166, -67.5666',
+                'poligono' => $borde,
+            ])->assertStatus(201)->json('id');
+
+        $codigo = $this->actingAs($usuario, 'sanctum')
+            ->postJson('/api/cosechas', ['parcela_id' => $id, 'fecha' => '2026-11-10', 'cantidad' => 100, 'variedad_cafe' => 'Typica'])
+            ->assertStatus(201)->json('codigo_trazabilidad');
+
+        $this->getJson("/api/trazabilidad/{$codigo}")
+            ->assertStatus(200)
+            ->assertJsonPath('parcela.poligono', $borde);
+    }
+
+    public function test_borde_de_parcela_con_menos_de_tres_puntos_es_rechazado(): void
+    {
+        $usuario = $this->productorAutenticado();
+
+        $this->actingAs($usuario, 'sanctum')
+            ->postJson('/api/parcelas', [
+                'nombre_parcela' => 'Parcela',
+                'poligono' => [[-15.8, -67.5], [-15.9, -67.6]],
+            ])->assertStatus(422)->assertJsonValidationErrors('poligono');
+    }
+
     public function test_cosecha_genera_codigo_de_trazabilidad_y_entra_a_inventario(): void
     {
         $usuario = $this->productorAutenticado();

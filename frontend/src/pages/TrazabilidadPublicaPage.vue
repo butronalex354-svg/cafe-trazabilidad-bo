@@ -47,8 +47,10 @@
         <q-card flat bordered class="caja-tema q-pa-md q-mb-md">
           <div class="text-subtitle2 text-brown-8 q-mb-sm">Origen (ubicación de la parcela)</div>
           <ParcelaMapView
-            v-if="lote.parcela?.ubicacion"
+            v-if="lote.parcela?.ubicacion || lote.parcela?.poligono"
             :ubicacion="lote.parcela.ubicacion"
+            :poligono="lote.parcela.poligono"
+            :hectareas="lote.parcela.tamano_terreno"
             :etiqueta="lote.parcela.nombre_parcela"
             :height="180"
             fill

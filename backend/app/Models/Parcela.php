@@ -19,12 +19,18 @@ class Parcela extends Model
         'productor_id',
         'nombre_parcela',
         'ubicacion',
+        'poligono',
         'tipo_suelo',
         'tamano_terreno',
         'ph_suelo',
         'humedad_suelo',
         'fertilidad',
         'verificador_id',
+    ];
+
+    protected $casts = [
+        // Borde dibujado en el mapa: [[lat, lng], [lat, lng], ...]
+        'poligono' => 'array',
     ];
 
     public function productor(): BelongsTo

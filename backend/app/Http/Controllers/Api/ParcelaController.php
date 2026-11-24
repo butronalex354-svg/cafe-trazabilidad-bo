@@ -61,6 +61,11 @@ class ParcelaController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre_parcela' => 'required|string|max:100',
             'ubicacion' => 'nullable|string|max:255',
+            // Borde de la parcela dibujado en el mapa (minimo 3 puntos)
+            'poligono' => 'nullable|array|min:3|max:200',
+            'poligono.*' => 'array|size:2',
+            'poligono.*.0' => 'numeric|between:-90,90',
+            'poligono.*.1' => 'numeric|between:-180,180',
             'tipo_suelo' => 'nullable|string|max:100',
             'tamano_terreno' => 'nullable|numeric|min:0',
         ]);
@@ -100,6 +105,11 @@ class ParcelaController extends Controller
         $validator = Validator::make($request->all(), [
             'nombre_parcela' => 'required|string|max:100',
             'ubicacion' => 'nullable|string|max:255',
+            // Borde de la parcela dibujado en el mapa (minimo 3 puntos)
+            'poligono' => 'nullable|array|min:3|max:200',
+            'poligono.*' => 'array|size:2',
+            'poligono.*.0' => 'numeric|between:-90,90',
+            'poligono.*.1' => 'numeric|between:-180,180',
             'tipo_suelo' => 'nullable|string|max:100',
             'tamano_terreno' => 'nullable|numeric|min:0',
         ]);

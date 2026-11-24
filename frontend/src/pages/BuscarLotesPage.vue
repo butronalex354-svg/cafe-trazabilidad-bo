@@ -106,7 +106,7 @@
 
         <q-card-section v-if="loteDetalle.parcela?.ubicacion">
           <div class="text-subtitle2 text-brown-8 q-mb-xs">Ubicación de la parcela</div>
-          <ParcelaMapView :ubicacion="loteDetalle.parcela.ubicacion" :etiqueta="loteDetalle.parcela.nombre_parcela" :height="160" fill />
+          <ParcelaMapView :ubicacion="loteDetalle.parcela.ubicacion" :poligono="loteDetalle.parcela.poligono" :hectareas="loteDetalle.parcela.tamano_terreno" :etiqueta="loteDetalle.parcela.nombre_parcela" :height="160" fill />
         </q-card-section>
 
         <q-separator />

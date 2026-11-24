@@ -112,7 +112,7 @@
             </div>
 
             <div class="col-12 col-sm-6">
-              <ParcelaMapView :ubicacion="parcela.ubicacion" :etiqueta="parcela.nombre_parcela" :height="170" fill />
+              <ParcelaMapView :key="JSON.stringify([parcela.ubicacion, parcela.poligono, parcela.tamano_terreno])" :ubicacion="parcela.ubicacion" :poligono="parcela.poligono" :hectareas="parcela.tamano_terreno" :etiqueta="parcela.nombre_parcela" :height="170" fill />
             </div>
           </q-card-section>
         </q-card>
@@ -144,7 +144,7 @@
         <q-card-section class="q-gutter-sm">
           <q-input v-model="formParcela.nombre_parcela" label="Nombre de la parcela" dense outlined />
 
-          <ParcelaMapPicker v-model="formParcela.ubicacion" />
+          <ParcelaMapPicker v-model="formParcela.ubicacion" v-model:poligono="formParcela.poligono" />
           <q-input v-model="formParcela.ubicacion" label="Ubicación (lat, lng)" dense outlined hint="Se llena solo al marcar en el mapa, o edítala a mano">
             <template v-slot:append>
               <q-btn flat dense round icon="my_location" color="brown-7" @click="usarUbicacionActual" />
@@ -243,11 +243,11 @@ async function guardarPerfil () {
 // --- Parcelas ---
 const dlgParcela = ref(false)
 const parcelaEditando = ref(null)
-const formParcela = ref({ nombre_parcela: '', ubicacion: '', tipo_suelo: null, tamano_terreno: null })
+const formParcela = ref({ nombre_parcela: '', ubicacion: '', poligono: null, tipo_suelo: null, tamano_terreno: null })
 
 function abrirNuevaParcela () {
   parcelaEditando.value = null
-  formParcela.value = { nombre_parcela: '', ubicacion: '', tipo_suelo: null, tamano_terreno: null }
+  formParcela.value = { nombre_parcela: '', ubicacion: '', poligono: null, tipo_suelo: null, tamano_terreno: null }
   dlgParcela.value = true
 }
 
@@ -256,6 +256,7 @@ function abrirEditarParcela (parcela) {
   formParcela.value = {
     nombre_parcela: parcela.nombre_parcela,
     ubicacion: parcela.ubicacion,
+    poligono: parcela.poligono || null,
     tipo_suelo: parcela.tipo_suelo,
     tamano_terreno: parcela.tamano_terreno
   }
