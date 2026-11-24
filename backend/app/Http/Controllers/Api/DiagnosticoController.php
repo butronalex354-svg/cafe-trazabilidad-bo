@@ -138,7 +138,7 @@ class DiagnosticoController extends Controller
         $diagnostico = Diagnostico::create([
             'parcela_id' => $parcela->id,
             'imagen_url' => $imagenUrl,
-            'fecha' => now()->toDateString(),
+            'fecha' => now(config('app.zona_local'))->toDateString(),
             'resultado' => $resultado,
             'confianza' => $confianza,
         ]);
@@ -149,7 +149,7 @@ class DiagnosticoController extends Controller
                 'diagnostico_id' => $diagnostico->id,
                 'productor_id' => $productor->id,
                 'mensaje' => "Se detectó posible {$resultado} en la parcela \"{$parcela->nombre_parcela}\" (confianza {$confianza}%). Revisa el cultivo cuanto antes.",
-                'fecha' => now()->toDateString(),
+                'fecha' => now(config('app.zona_local'))->toDateString(),
                 'leida' => false,
             ]);
         }

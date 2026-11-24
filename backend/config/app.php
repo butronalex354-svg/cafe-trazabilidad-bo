@@ -67,6 +67,12 @@ return [
 
     'timezone' => 'UTC',
 
+    // Zona horaria de los usuarios (Bolivia, UTC-4). Las horas se siguen
+    // guardando en UTC, pero las fechas "de hoy" (diagnostico, alerta,
+    // inventario, etc.) se calculan con esta zona: con UTC, despues de las
+    // 20:00 en Bolivia el servidor ya ponia la fecha del dia siguiente.
+    'zona_local' => env('APP_ZONA_LOCAL', 'America/La_Paz'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

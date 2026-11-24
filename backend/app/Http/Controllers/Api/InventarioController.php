@@ -111,7 +111,7 @@ class InventarioController extends Controller
         $inventario->update([
             'estado' => $nuevoEstado,
             'cantidad_disponible' => $inventario->cosecha->cantidad,
-            'fecha_actualizacion' => now()->toDateString(),
+            'fecha_actualizacion' => now(config('app.zona_local'))->toDateString(),
         ]);
 
         return response()->json($inventario->fresh('cosecha.parcela'));
@@ -223,7 +223,7 @@ class InventarioController extends Controller
 
         $inventario->update([
             'cantidad_disponible' => $inventario->cantidad_disponible - $cantidadSalida,
-            'fecha_actualizacion' => now()->toDateString(),
+            'fecha_actualizacion' => now(config('app.zona_local'))->toDateString(),
         ]);
 
         $this->verificarDesabastecimiento($inventario);
@@ -261,7 +261,7 @@ class InventarioController extends Controller
             'inventario_id' => $inventario->id,
             'productor_id' => $cosecha->parcela->productor_id,
             'mensaje' => "El lote {$cosecha->codigo_trazabilidad} quedó con {$inventario->cantidad_disponible} kg disponibles, por debajo del stock mínimo definido ({$inventario->stock_minimo} kg).",
-            'fecha' => now()->toDateString(),
+            'fecha' => now(config('app.zona_local'))->toDateString(),
             'leida' => false,
             'resuelta' => false,
         ]);

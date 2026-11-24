@@ -316,7 +316,7 @@ class VerificacionController extends Controller
                 'parcela_id' => $parcela->id,
                 'productor_id' => $parcela->productor_id,
                 'mensaje' => "El pH de tu parcela \"{$parcela->nombre_parcela}\" está en {$request->ph_suelo}, fuera del rango ideal para el café (5.0 a 6.5). {$tratamiento}",
-                'fecha' => now()->toDateString(),
+                'fecha' => now(config('app.zona_local'))->toDateString(),
                 'leida' => false,
                 'resuelta' => false,
             ]);

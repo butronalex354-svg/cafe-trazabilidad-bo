@@ -75,7 +75,7 @@ class ClimaController extends Controller
 
         // Guarda (o actualiza) la lectura de hoy para esta parcela, como historial.
         CondicionClimatica::updateOrCreate(
-            ['parcela_id' => $parcela->id, 'fecha' => now()->toDateString()],
+            ['parcela_id' => $parcela->id, 'fecha' => now(config('app.zona_local'))->toDateString()],
             [
                 'temperatura' => $actual['temperature_2m'] ?? null,
                 'humedad' => $actual['relative_humidity_2m'] ?? null,

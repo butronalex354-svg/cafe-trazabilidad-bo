@@ -49,6 +49,32 @@ class DiagnosticoTest extends TestCase
         ]);
     }
 
+    public function test_diagnostico_de_noche_usa_la_fecha_de_bolivia(): void
+    {
+        // 00:30 en UTC del 24/11 son las 20:30 del 23/11 en Bolivia (UTC-4):
+        // la fecha guardada debe ser la del 23, no la del dia siguiente.
+        $this->travelTo(\Illuminate\Support\Carbon::parse('2026-11-24 00:30:00', 'UTC'));
+        Storage::fake('public');
+        Http::fake([
+            '*/diagnosticar' => Http::response([
+                'resultado' => 'enfermedad',
+                'confianza' => 80,
+                'reconocido' => true,
+            ], 200),
+        ]);
+
+        [$usuario, $parcela] = $this->productorConParcela();
+
+        $response = $this->actingAs($usuario, 'sanctum')->postJson('/api/diagnosticos', [
+            'parcela_id' => $parcela->id,
+            'foto' => UploadedFile::fake()->image('hoja.jpg'),
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('diagnostico', ['id' => $response->json('id'), 'fecha' => '2026-11-23']);
+        $this->assertDatabaseHas('alerta', ['diagnostico_id' => $response->json('id'), 'fecha' => '2026-11-23']);
+    }
+
     public function test_diagnostico_sano_no_genera_alerta(): void
     {
         Storage::fake('public');

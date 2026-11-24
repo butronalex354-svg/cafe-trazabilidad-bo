@@ -337,7 +337,7 @@ class AdministradorController extends Controller
         $cosecha->inventario->update([
             'estado' => 'exportado',
             'cantidad_disponible' => 0,
-            'fecha_actualizacion' => now()->toDateString(),
+            'fecha_actualizacion' => now(config('app.zona_local'))->toDateString(),
         ]);
 
         Auditoria::registrar($request->user()->id, null, 'autorizar_exportacion', "Autorizó la exportación del lote {$cosecha->codigo_trazabilidad}.");

@@ -49,7 +49,7 @@ class Cosecha extends Model
             $cosecha->inventario()->create([
                 'cantidad_disponible' => $cosecha->cantidad,
                 'estado' => 'en_proceso',
-                'fecha_actualizacion' => now()->toDateString(),
+                'fecha_actualizacion' => now(config('app.zona_local'))->toDateString(),
             ]);
         });
     }
