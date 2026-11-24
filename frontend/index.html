@@ -13,6 +13,12 @@
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:<% if (ctx.dev) { %> http://*:8000<% } %>;<% if (ctx.dev) { %> connect-src 'self' ws://localhost:* ws://*:9000 http://*:8000; worker-src 'self' blob:;<% } else { %> connect-src 'self' <%= apiUrl %>; worker-src 'self' blob:;<% } %>"
     />
 
+    <% if (apiUrl) { %>
+    <!-- Busca y abre la conexion al servidor de datos mientras se descarga la pagina,
+         en vez de esperar a que termine (con algunos routers buscar cada direccion tarda ~3 s) -->
+    <link rel="dns-prefetch" href="<%= apiUrl %>">
+    <link rel="preconnect" href="<%= apiUrl %>" crossorigin>
+    <% } %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
