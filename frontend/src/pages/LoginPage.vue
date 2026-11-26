@@ -1,5 +1,5 @@
 <template>
-  <div class="login-wrapper window-width" :class="{ revelado: mostrarLogin }">
+  <div class="login-wrapper window-width" :class="{ revelado: mostrarLogin, saliendo }">
     <AnimatedCafeBackground />
 
     <div class="hero-panel">
@@ -42,7 +42,7 @@
     <Transition name="panel-reveal">
     <div v-if="mostrarLogin" class="form-panel flex flex-center">
     <div class="login-card">
-      <div class="text-center q-mb-md">
+      <div class="text-center q-mb-md logo-aparece">
         <div class="logo-frame">
           <span class="steam s1"></span>
           <span class="steam s2"></span>
@@ -52,7 +52,7 @@
       </div>
 
       <q-form @submit.prevent="onSubmit" class="q-gutter-md q-mt-lg">
-        <div>
+        <div class="aparece" style="--i: 1">
           <div class="field-label">CORREO ELECTRÓNICO</div>
           <q-input
             v-model="email"
@@ -66,7 +66,7 @@
           />
         </div>
 
-        <div>
+        <div class="aparece" style="--i: 2">
           <div class="field-label">CONTRASEÑA</div>
           <q-input
             v-model="password"
@@ -89,7 +89,7 @@
           </q-input>
         </div>
 
-        <div class="row items-center justify-between q-mt-sm">
+        <div class="row items-center justify-between q-mt-sm aparece" style="--i: 3">
           <q-checkbox v-model="recordar" label="Recordarme" dark color="amber" dense class="text-caption text-grey-4" />
           <div class="text-caption forgot-link cursor-pointer">¿Olvidaste tu contraseña?</div>
         </div>
@@ -99,19 +99,20 @@
         <q-btn
           type="submit"
           label="Ingresar al sistema"
-          class="full-width text-weight-bold sign-in-btn"
+          class="full-width text-weight-bold sign-in-btn aparece"
+          style="--i: 4"
           unelevated
           :loading="cargando"
         />
 
-        <div class="flex flex-center q-mt-sm">
+        <div class="flex flex-center q-mt-sm aparece" style="--i: 5">
           <q-btn round flat type="button" class="google-icon-btn" @click="onGoogleClick">
             <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" />
           </q-btn>
         </div>
       </q-form>
 
-      <div class="text-center q-mt-md">
+      <div class="text-center q-mt-md aparece" style="--i: 6">
         <span class="text-caption text-grey-5">¿Nuevo aquí? </span>
         <span class="text-caption create-account-link cursor-pointer" @click="router.push('/registro')">Crear una cuenta</span>
       </div>
@@ -165,12 +166,28 @@ onMounted(() => {
 // clic extra.
 const mostrarLogin = ref(!!route.query.google_error || route.query.sesion === 'cerrada')
 
-// En celular la presentacion se esconde al abrir el formulario (ver el CSS);
-// se vuelve arriba para que el formulario aparezca desde el principio y no
-// a la altura donde estaba el boton.
+// En celular la presentacion se esconde al abrir el formulario (ver el CSS).
+// Antes de esconderla se la deja salir con una animacion (sube y se
+// difumina, clase "saliendo") y recien despues entra el formulario, parte
+// por parte. Se vuelve arriba para que el formulario aparezca desde el
+// principio y no a la altura donde estaba el boton.
+// En pantalla ancha la presentacion se queda a la izquierda, no sale.
+const saliendo = ref(false)
+const DURACION_SALIDA_MS = 420
+
 function abrirLogin () {
-  mostrarLogin.value = true
-  window.scrollTo(0, 0)
+  if (saliendo.value) return
+  const celular = window.matchMedia('(max-width: 1023px)').matches
+  if (!celular) {
+    mostrarLogin.value = true
+    return
+  }
+  saliendo.value = true
+  setTimeout(() => {
+    window.scrollTo(0, 0)
+    mostrarLogin.value = true
+    saliendo.value = false
+  }, DURACION_SALIDA_MS)
 }
 
 const email = ref('')
@@ -267,6 +284,36 @@ async function onSubmit () {
 .cta-ingresar:hover {
   transform: translateY(-2px) scale(1.015);
   box-shadow: 0 4px 26px rgba(212, 166, 47, 0.5);
+}
+
+/* Celular: al apretar "Ingresar al sistema" la presentacion sube y se
+   difumina antes de desaparecer (dura lo mismo que DURACION_SALIDA_MS). */
+.login-wrapper.saliendo .hero-panel {
+  animation: heroSalida .42s cubic-bezier(.4, 0, .2, 1) forwards;
+  pointer-events: none;
+}
+@keyframes heroSalida {
+  to { opacity: 0; transform: translateY(-32px) scale(.96); filter: blur(6px); }
+}
+
+/* Las partes del formulario entran una tras otra (logo, correo,
+   contraseña, recordarme, boton, Google, crear cuenta): cada una sube un
+   poco y se aclara. --i es el orden de cada parte en el template.
+   "backwards" (no "both") para que al terminar no pise el efecto hover. */
+.login-card .aparece {
+  animation: parteAparece .55s cubic-bezier(.2, .8, .2, 1) backwards;
+  animation-delay: calc(.2s + var(--i, 0) * .08s);
+}
+@keyframes parteAparece {
+  from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+}
+/* El logo entra primero, creciendo y girando apenas */
+.login-card .logo-aparece {
+  animation: logoAparece .8s cubic-bezier(.2, .8, .2, 1) .1s backwards;
+}
+@keyframes logoAparece {
+  from { opacity: 0; transform: scale(.7) rotate(-8deg); filter: blur(6px); }
+  60% { opacity: 1; filter: blur(0); }
 }
 
 /* Animacion de entrada de la tarjeta al revelarla (ademas de la propia
@@ -393,6 +440,11 @@ async function onSubmit () {
   .login-wrapper.revelado .hero-panel {
     display: none;
   }
+  /* En celular la tarjeta sube (cardEnter); sin el deslizamiento de costado
+     que tiene en pantalla ancha */
+  .panel-reveal-enter-from {
+    transform: none;
+  }
   .login-wrapper.revelado .form-panel {
     flex: 1 1 auto;
     min-height: 100vh;
@@ -414,11 +466,19 @@ async function onSubmit () {
   box-shadow: 0 0 40px rgba(212, 166, 47, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   font-family: 'Poppins', sans-serif;
-  animation: cardEnter .7s cubic-bezier(.2, .8, .2, 1) both;
+  /* Entra subiendo, y el borde dorado brilla una vez al llegar */
+  animation:
+    cardEnter .7s cubic-bezier(.2, .8, .2, 1) both,
+    cardBrillo 1.6s ease .35s backwards;
 }
 @keyframes cardEnter {
-  from { opacity: 0; transform: translateY(22px) scale(.98); }
+  from { opacity: 0; transform: translateY(40px) scale(.94); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes cardBrillo {
+  0% { border-color: rgba(212, 166, 47, 0.3); box-shadow: 0 0 40px rgba(212, 166, 47, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6); }
+  35% { border-color: rgba(243, 223, 160, 0.95); box-shadow: 0 0 70px rgba(212, 166, 47, 0.55), 0 20px 60px rgba(0, 0, 0, 0.6); }
+  100% { border-color: rgba(212, 166, 47, 0.3); box-shadow: 0 0 40px rgba(212, 166, 47, 0.12), 0 20px 60px rgba(0, 0, 0, 0.6); }
 }
 
 .logo-frame {

@@ -260,3 +260,16 @@ html, body, #q-app, .q-layout {
   // Esto le dice al navegador que no haga esa navegacion dentro de la app.
   overscroll-behavior-x: none;
 }
+
+// Celular con la barra de abajo: Quasar deja un espacio libre debajo de cada
+// pagina para que la barra no tape el contenido, y en ese espacio se veia el
+// fondo blanco/crema del body (una franja blanca detras de la barra). El
+// degradado se pinta en el contenedor (que incluye ese espacio) en vez de en
+// la pagina, asi baja continuo hasta el borde de la pantalla. Va al final y
+// con ".q-layout" para ganarle tambien a la regla del modo oscuro.
+.q-layout.con-barra-celular .q-page-container {
+  background: var(--gradiente-fondo-pagina);
+}
+.q-layout.con-barra-celular .pagina-tema {
+  background: transparent;
+}

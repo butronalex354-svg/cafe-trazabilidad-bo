@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" :class="{ 'con-barra-celular': celular }">
     <q-header class="bg-header-cafe">
       <q-toolbar>
         <q-btn v-if="!celular" flat dense round icon="menu" aria-label="Menú" @click="alternarMenu" />
