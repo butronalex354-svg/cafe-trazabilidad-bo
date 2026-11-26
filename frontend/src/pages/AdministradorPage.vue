@@ -121,7 +121,7 @@
     <q-inner-loading :showing="admin.cargando" />
 
     <q-list bordered separator class="rounded-borders caja-tema">
-      <q-item v-for="u in admin.usuarios" :key="u.id">
+      <q-item v-for="u in admin.usuarios" :key="u.id" class="fila-usuario">
         <q-item-section avatar>
           <q-icon :name="iconoEstado(u.estado)" :color="colorEstado(u.estado)" size="26px" />
         </q-item-section>
@@ -129,9 +129,22 @@
           <q-item-label>{{ u.nombre }} · {{ etiquetaRol(u.rol) }}</q-item-label>
           <q-item-label caption>{{ u.email }}</q-item-label>
         </q-item-section>
-        <q-item-section side>
+        <q-item-section side class="acciones-usuario">
           <div class="row q-gutter-sm items-center">
             <q-badge :color="colorEstado(u.estado)" :label="etiquetaEstado(u.estado)" />
+            <q-btn
+              v-if="u.id !== auth.user?.id"
+              dense
+              outline
+              color="brown-8"
+              icon="key"
+              label="Contraseña"
+              no-caps
+              aria-label="Restablecer contraseña"
+              @click="abrirDialogoPassword(u)"
+            >
+              <q-tooltip>Ponerle una contraseña nueva (si se la olvidó)</q-tooltip>
+            </q-btn>
             <q-btn v-if="u.estado === 'aprobado'" dense outline color="negative" icon="block" label="Desactivar" no-caps @click="desactivar(u)" />
             <q-btn v-if="u.estado === 'desactivado'" dense outline color="positive" icon="check" label="Reactivar" no-caps @click="reactivar(u)" />
           </div>
@@ -185,6 +198,48 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <!-- Restablecer la contraseña de otra cuenta (cuando alguien se la olvido) -->
+    <q-dialog v-model="dialogoPassword">
+      <q-card class="caja-tema" style="min-width: 320px; max-width: 420px; width: 100%">
+        <q-card-section>
+          <div class="text-h6 text-brown-9">Restablecer contraseña</div>
+          <div class="text-caption text-grey-7">
+            {{ usuarioPassword?.nombre }} · {{ usuarioPassword?.email }}
+          </div>
+        </q-card-section>
+        <q-card-section class="q-gutter-md">
+          <div class="text-body2 text-grey-8">
+            La contraseña anterior no se puede ver (se guarda cifrada); aquí le pones una nueva.
+            Anótala y pásasela a la persona: si tenía la sesión abierta, tendrá que volver a ingresar.
+          </div>
+          <q-input
+            v-model="passwordNueva"
+            label="Contraseña nueva"
+            :type="verPasswordNueva ? 'text' : 'password'"
+            autocomplete="new-password"
+            outlined
+            dense
+            bg-color="white"
+            :rules="[reglaPassword]"
+            lazy-rules
+            @keyup.enter="restablecerPassword"
+          >
+            <template v-slot:append>
+              <q-icon
+                :name="verPasswordNueva ? 'visibility' : 'visibility_off'"
+                class="cursor-pointer"
+                @click="verPasswordNueva = !verPasswordNueva"
+              />
+            </template>
+          </q-input>
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="grey-8" no-caps v-close-popup />
+          <q-btn unelevated label="Guardar" color="brown-8" no-caps :loading="guardandoPassword" @click="restablecerPassword" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -192,10 +247,44 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useAdministradorStore } from '@/stores/administrador'
+import { useAuthStore } from '@/stores/auth'
 import { reglaPassword, passwordValida, MENSAJE_PASSWORD, mensajeDeError } from '@/utils/validacionPassword'
 
 const $q = useQuasar()
 const admin = useAdministradorStore()
+// Para no mostrar el boton de contraseña en la propia cuenta (esa se
+// cambia desde "Cambiar contraseña", que pide la actual).
+const auth = useAuthStore()
+
+const dialogoPassword = ref(false)
+const usuarioPassword = ref(null)
+const passwordNueva = ref('')
+const verPasswordNueva = ref(false)
+const guardandoPassword = ref(false)
+
+function abrirDialogoPassword (u) {
+  usuarioPassword.value = u
+  passwordNueva.value = ''
+  verPasswordNueva.value = false
+  dialogoPassword.value = true
+}
+
+async function restablecerPassword () {
+  if (!passwordValida(passwordNueva.value)) {
+    $q.notify({ type: 'negative', message: MENSAJE_PASSWORD + '.' })
+    return
+  }
+  guardandoPassword.value = true
+  try {
+    await admin.restablecerPassword(usuarioPassword.value.id, passwordNueva.value)
+    $q.notify({ type: 'positive', message: `Listo: ${usuarioPassword.value.nombre} ya puede ingresar con la contraseña nueva.` })
+    dialogoPassword.value = false
+  } catch (err) {
+    $q.notify({ type: 'negative', message: mensajeDeError(err, 'No se pudo cambiar la contraseña.') })
+  } finally {
+    guardandoPassword.value = false
+  }
+}
 
 const filtroRol = ref(null)
 const opcionesRol = [
@@ -300,6 +389,22 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* En celular el nombre y los botones no entran en una sola linea (el
+   nombre quedaba apretado en una columna angosta): los botones pasan a
+   una segunda linea, debajo del correo. */
+@media (max-width: 599px) {
+  .fila-usuario {
+    flex-wrap: wrap;
+  }
+  .fila-usuario > .acciones-usuario {
+    flex: 1 1 100%;
+    align-items: flex-start;
+    /* desde el borde (no debajo del nombre) para que estado + los 2
+       botones entren en una sola linea en un celular de ~360-390px */
+    padding-left: 0;
+    margin-top: 8px;
+  }
+}
 .stat-card {
   background: linear-gradient(165deg, #fff6e6 0%, #f7e4bf 100%);
   border: 1px solid rgba(224, 168, 74, 0.4) !important;

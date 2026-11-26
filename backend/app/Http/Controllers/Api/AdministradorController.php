@@ -222,6 +222,62 @@ class AdministradorController extends Controller
     }
 
     /**
+     * Le pone una contraseña nueva a otra cuenta, para cuando un usuario
+     * se olvido la suya. Las contraseñas se guardan cifradas, asi que no
+     * hay forma de "ver" la anterior: solo se puede reemplazar.
+     */
+    #[OA\Put(
+        path: '/administrador/usuarios/{id}/password',
+        summary: 'Restablece la contraseña de otra cuenta',
+        description: 'Cierra las sesiones abiertas de esa cuenta y queda registrado en la auditoría (sin la contraseña).',
+        tags: ['Administrador'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(
+            required: ['password'],
+            properties: [new OA\Property(property: 'password', type: 'string', format: 'password', minLength: 8)]
+        )),
+        responses: [
+            new OA\Response(response: 200, description: 'Contraseña restablecida'),
+            new OA\Response(response: 403, description: 'No es Administrador'),
+            new OA\Response(response: 422, description: 'Contraseña débil o es la cuenta propia'),
+        ]
+    )]
+    public function restablecerPassword(Request $request, $id)
+    {
+        $this->verificarAdministrador($request);
+
+        $usuario = User::findOrFail($id);
+
+        // La propia se cambia desde "Cambiar contraseña", que pide la actual:
+        // asi, si alguien encuentra la sesion del administrador abierta, no
+        // puede quedarse con la cuenta cambiandole la clave sin saberla.
+        if ($usuario->id === $request->user()->id) {
+            return response()->json(['message' => 'Para tu propia cuenta usa "Cambiar contraseña".'], 422);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'password' => ['required', Password::min(8)->letters()->numbers()],
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Datos invalidos.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $usuario->update(['password' => $request->password]);
+        // Cierra las sesiones que tuviera abiertas: si alguien mas estaba
+        // usando la cuenta, deja de tener acceso desde ya.
+        $usuario->tokens()->delete();
+
+        Auditoria::registrar($request->user()->id, $usuario->id, 'restablecer_password', "Restableció la contraseña de {$usuario->nombre} ({$usuario->email}).");
+
+        return response()->json(['message' => 'Contraseña restablecida.']);
+    }
+
+    /**
      * Reportes generales para el panel del Administrador (supervision
      * general del sistema, segun la tabla de actores del documento de
      * requerimientos).

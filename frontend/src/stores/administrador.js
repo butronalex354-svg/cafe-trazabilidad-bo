@@ -58,6 +58,10 @@ export const useAdministradorStore = defineStore('administrador', {
       if (indice !== -1) this.usuarios[indice] = data.usuario
     },
 
+    async restablecerPassword (id, password) {
+      await api.put(`/administrador/usuarios/${id}/password`, { password })
+    },
+
     async reactivarUsuario (id) {
       const { data } = await api.put(`/administrador/usuarios/${id}/reactivar`)
       const indice = this.usuarios.findIndex(u => u.id === id)
