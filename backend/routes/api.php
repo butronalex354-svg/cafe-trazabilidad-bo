@@ -101,6 +101,7 @@ Route::middleware(['auth:sanctum', 'cuenta.activa'])->group(function () {
         Route::put('/administrador/usuarios/{id}/desactivar', [AdministradorController::class, 'desactivarUsuario']);
         Route::put('/administrador/usuarios/{id}/reactivar', [AdministradorController::class, 'reactivarUsuario']);
         Route::put('/administrador/usuarios/{id}/password', [AdministradorController::class, 'restablecerPassword']);
+        Route::delete('/administrador/usuarios/{id}', [AdministradorController::class, 'eliminarUsuario']);
         Route::get('/administrador/reportes', [AdministradorController::class, 'reportes']);
         Route::get('/administrador/auditoria', [AdministradorController::class, 'auditoria']);
         Route::get('/administrador/lotes-para-exportar', [AdministradorController::class, 'lotesParaExportar']);

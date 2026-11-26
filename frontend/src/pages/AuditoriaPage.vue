@@ -44,6 +44,7 @@ function etiquetaAccion (accion) {
     desactivar_usuario: 'Cuenta desactivada',
     reactivar_usuario: 'Cuenta reactivada',
     restablecer_password: 'Contraseña restablecida',
+    eliminar_usuario: 'Cuenta eliminada',
     editar_cuenta: 'Datos editados'
   }[accion] || accion
 }
@@ -56,6 +57,7 @@ function iconoAccion (accion) {
     desactivar_usuario: 'block',
     reactivar_usuario: 'check',
     restablecer_password: 'key',
+    eliminar_usuario: 'delete_forever',
     editar_cuenta: 'edit'
   }[accion] || 'history'
 }
@@ -68,6 +70,7 @@ function colorAccion (accion) {
     desactivar_usuario: 'grey-7',
     reactivar_usuario: 'positive',
     restablecer_password: 'brown-8',
+    eliminar_usuario: 'negative',
     editar_cuenta: 'amber-8'
   }[accion] || 'grey'
 }

@@ -121,7 +121,7 @@
     <q-inner-loading :showing="admin.cargando" />
 
     <q-list bordered separator class="rounded-borders caja-tema">
-      <q-item v-for="u in admin.usuarios" :key="u.id" class="fila-usuario">
+      <q-item v-for="u in admin.usuarios" :key="u.id">
         <q-item-section avatar>
           <q-icon :name="iconoEstado(u.estado)" :color="colorEstado(u.estado)" size="26px" />
         </q-item-section>
@@ -129,24 +129,48 @@
           <q-item-label>{{ u.nombre }} · {{ etiquetaRol(u.rol) }}</q-item-label>
           <q-item-label caption>{{ u.email }}</q-item-label>
         </q-item-section>
-        <q-item-section side class="acciones-usuario">
-          <div class="row q-gutter-sm items-center">
+        <q-item-section side>
+          <div class="row no-wrap items-center q-gutter-xs">
             <q-badge :color="colorEstado(u.estado)" :label="etiquetaEstado(u.estado)" />
+            <!-- La propia cuenta no tiene menu: no puede desactivarse ni
+                 eliminarse a si misma, y su contraseña se cambia desde
+                 "Cambiar contraseña" (que pide la actual). -->
+            <q-badge v-if="u.id === auth.user?.id" outline color="brown-8" label="Tú" />
             <q-btn
-              v-if="u.id !== auth.user?.id"
+              v-else
+              flat
+              round
               dense
-              outline
               color="brown-8"
-              icon="key"
-              label="Contraseña"
-              no-caps
-              aria-label="Restablecer contraseña"
-              @click="abrirDialogoPassword(u)"
+              icon="more_vert"
+              aria-label="Opciones de la cuenta"
             >
-              <q-tooltip>Ponerle una contraseña nueva (si se la olvidó)</q-tooltip>
+              <q-tooltip>Opciones</q-tooltip>
+              <q-menu anchor="bottom right" self="top right">
+                <q-list dense style="min-width: 200px">
+                  <q-item clickable v-close-popup @click="abrirDialogoPassword(u)">
+                    <q-item-section avatar><q-icon name="key" color="brown-8" /></q-item-section>
+                    <q-item-section>Contraseña nueva</q-item-section>
+                  </q-item>
+                  <q-item v-if="u.estado === 'aprobado'" clickable v-close-popup @click="desactivar(u)">
+                    <q-item-section avatar><q-icon name="block" color="negative" /></q-item-section>
+                    <q-item-section class="text-negative">Desactivar</q-item-section>
+                  </q-item>
+                  <q-item v-if="u.estado === 'desactivado'" clickable v-close-popup @click="reactivar(u)">
+                    <q-item-section avatar><q-icon name="check" color="positive" /></q-item-section>
+                    <q-item-section class="text-positive">Reactivar</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable v-close-popup @click="eliminar(u)">
+                    <q-item-section avatar><q-icon name="delete_forever" color="negative" /></q-item-section>
+                    <q-item-section>
+                      <q-item-label class="text-negative">Eliminar</q-item-label>
+                      <q-item-label caption>Solo si no tiene datos</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
             </q-btn>
-            <q-btn v-if="u.estado === 'aprobado'" dense outline color="negative" icon="block" label="Desactivar" no-caps @click="desactivar(u)" />
-            <q-btn v-if="u.estado === 'desactivado'" dense outline color="positive" icon="check" label="Reactivar" no-caps @click="reactivar(u)" />
           </div>
         </q-item-section>
       </q-item>
@@ -338,6 +362,26 @@ async function desactivar (u) {
   }
 }
 
+// Solo borra cuentas vacias: si tiene parcelas, lotes o verificaciones el
+// servidor lo rechaza con un mensaje que dice que tiene y que se desactive.
+function eliminar (u) {
+  $q.dialog({
+    title: 'Eliminar cuenta',
+    message: `¿Eliminar la cuenta de ${u.nombre} (${u.email})? Esto no se puede deshacer.`,
+    class: 'caja-tema',
+    cancel: { flat: true, label: 'Cancelar', color: 'grey-8', noCaps: true },
+    ok: { unelevated: true, label: 'Eliminar', color: 'negative', noCaps: true }
+  }).onOk(async () => {
+    try {
+      await admin.eliminarUsuario(u.id)
+      $q.notify({ type: 'positive', message: `Cuenta de ${u.nombre} eliminada.` })
+      admin.cargarReportes()
+    } catch (err) {
+      $q.notify({ type: 'negative', message: mensajeDeError(err, 'No se pudo eliminar la cuenta.'), multiLine: true, timeout: 9000 })
+    }
+  })
+}
+
 async function reactivar (u) {
   try {
     await admin.reactivarUsuario(u.id)
@@ -389,22 +433,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* En celular el nombre y los botones no entran en una sola linea (el
-   nombre quedaba apretado en una columna angosta): los botones pasan a
-   una segunda linea, debajo del correo. */
-@media (max-width: 599px) {
-  .fila-usuario {
-    flex-wrap: wrap;
-  }
-  .fila-usuario > .acciones-usuario {
-    flex: 1 1 100%;
-    align-items: flex-start;
-    /* desde el borde (no debajo del nombre) para que estado + los 2
-       botones entren en una sola linea en un celular de ~360-390px */
-    padding-left: 0;
-    margin-top: 8px;
-  }
-}
 .stat-card {
   background: linear-gradient(165deg, #fff6e6 0%, #f7e4bf 100%);
   border: 1px solid rgba(224, 168, 74, 0.4) !important;

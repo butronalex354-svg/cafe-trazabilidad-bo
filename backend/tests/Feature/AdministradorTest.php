@@ -2,6 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cosecha;
+use App\Models\Parcela;
+use App\Models\Productor;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -97,6 +100,62 @@ class AdministradorTest extends TestCase
         $this->actingAs($administrador, 'sanctum')
             ->putJson("/api/administrador/usuarios/{$administrador->id}/password", ['password' => 'otra12345'])
             ->assertStatus(422);
+    }
+
+    public function test_administrador_elimina_una_cuenta_sin_datos_y_el_correo_queda_libre(): void
+    {
+        $administrador = User::factory()->administrador()->create();
+        $vacio = User::factory()->pendiente()->create(['email' => 'mal.creada@cafe.bo']);
+        $perfil = Productor::create(['usuario_id' => $vacio->id, 'nombre_completo' => $vacio->nombre]);
+
+        $this->actingAs($administrador, 'sanctum')
+            ->deleteJson("/api/administrador/usuarios/{$vacio->id}")
+            ->assertStatus(200);
+
+        $this->assertDatabaseMissing('usuario', ['id' => $vacio->id]);
+        $this->assertDatabaseMissing('productor', ['id' => $perfil->id]);
+        $this->assertDatabaseHas('auditoria', ['usuario_id' => $administrador->id, 'accion' => 'eliminar_usuario']);
+
+        // El mismo correo se puede volver a registrar
+        $this->app['auth']->forgetGuards();
+        $this->postJson('/api/register', [
+            'nombre' => 'De Nuevo', 'email' => 'mal.creada@cafe.bo',
+            'password' => 'nueva12345', 'password_confirmation' => 'nueva12345',
+            'ci' => '1234567 LP', 'telefono' => '70000000', 'direccion' => 'Caranavi',
+        ])->assertStatus(201);
+    }
+
+    public function test_no_se_elimina_un_productor_con_parcelas_y_lotes(): void
+    {
+        $administrador = User::factory()->administrador()->create();
+        $productor = User::factory()->create(['nombre' => 'Micaela']);
+        $perfil = Productor::create(['usuario_id' => $productor->id, 'nombre_completo' => 'Micaela']);
+        $parcela = Parcela::create(['productor_id' => $perfil->id, 'nombre_parcela' => 'La Alta', 'tamano_terreno' => 1]);
+        Cosecha::create(['parcela_id' => $parcela->id, 'fecha' => now()->toDateString(), 'cantidad' => 50, 'variedad_cafe' => 'Caturra']);
+
+        $this->actingAs($administrador, 'sanctum')
+            ->deleteJson("/api/administrador/usuarios/{$productor->id}")
+            ->assertStatus(422)
+            ->assertJsonFragment(['message' => 'No se puede eliminar a Micaela: tiene 1 parcela y 1 lote registrados. Desactiva la cuenta en su lugar, así sus registros (y los QR de sus lotes) siguen funcionando.']);
+
+        $this->assertDatabaseHas('usuario', ['id' => $productor->id]);
+        $this->assertDatabaseHas('parcela', ['id' => $parcela->id]);
+    }
+
+    public function test_no_se_elimina_la_cuenta_propia_ni_lo_puede_hacer_un_productor(): void
+    {
+        $administrador = User::factory()->administrador()->create();
+        $productor = User::factory()->create();
+        $otro = User::factory()->create();
+
+        $this->actingAs($administrador, 'sanctum')
+            ->deleteJson("/api/administrador/usuarios/{$administrador->id}")
+            ->assertStatus(422);
+
+        $this->actingAs($productor, 'sanctum')
+            ->deleteJson("/api/administrador/usuarios/{$otro->id}")
+            ->assertStatus(403);
+        $this->assertDatabaseHas('usuario', ['id' => $otro->id]);
     }
 
     public function test_un_productor_no_puede_restablecer_contrasenas_ajenas(): void

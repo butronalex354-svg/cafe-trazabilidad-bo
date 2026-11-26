@@ -62,6 +62,11 @@ export const useAdministradorStore = defineStore('administrador', {
       await api.put(`/administrador/usuarios/${id}/password`, { password })
     },
 
+    async eliminarUsuario (id) {
+      await api.delete(`/administrador/usuarios/${id}`)
+      this.usuarios = this.usuarios.filter(u => u.id !== id)
+    },
+
     async reactivarUsuario (id) {
       const { data } = await api.put(`/administrador/usuarios/${id}/reactivar`)
       const indice = this.usuarios.findIndex(u => u.id === id)

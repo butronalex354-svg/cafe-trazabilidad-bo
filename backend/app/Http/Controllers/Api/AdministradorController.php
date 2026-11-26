@@ -11,7 +11,9 @@ use App\Models\Inventario;
 use App\Models\Parcela;
 use App\Models\Reclamo;
 use App\Models\User;
+use App\Models\Verificacion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use OpenApi\Attributes as OA;
@@ -275,6 +277,99 @@ class AdministradorController extends Controller
         Auditoria::registrar($request->user()->id, $usuario->id, 'restablecer_password', "Restableció la contraseña de {$usuario->nombre} ({$usuario->email}).");
 
         return response()->json(['message' => 'Contraseña restablecida.']);
+    }
+
+    /**
+     * Elimina una cuenta SOLO si no tiene datos (ej. una cuenta mal creada o
+     * de prueba que quedo vacia). Si ya tiene parcelas, lotes o
+     * verificaciones no se borra: se debe desactivar, para que la
+     * trazabilidad de esos lotes y sus QR sigan funcionando.
+     */
+    #[OA\Delete(
+        path: '/administrador/usuarios/{id}',
+        summary: 'Elimina una cuenta que no tiene datos registrados',
+        description: 'Si la cuenta ya tiene parcelas, lotes, verificaciones o acciones de administrador, responde 422 y hay que desactivarla en su lugar.',
+        tags: ['Administrador'],
+        security: [['sanctum' => []]],
+        parameters: [new OA\Parameter(name: 'id', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [
+            new OA\Response(response: 200, description: 'Cuenta eliminada'),
+            new OA\Response(response: 403, description: 'No es Administrador'),
+            new OA\Response(response: 422, description: 'Tiene datos registrados o es la cuenta propia'),
+        ]
+    )]
+    public function eliminarUsuario(Request $request, $id)
+    {
+        $this->verificarAdministrador($request);
+
+        $usuario = User::with('productor')->findOrFail($id);
+
+        if ($usuario->id === $request->user()->id) {
+            return response()->json(['message' => 'No puedes eliminar tu propia cuenta.'], 422);
+        }
+
+        $datos = $this->datosQueImpidenEliminar($usuario);
+        if ($datos) {
+            return response()->json([
+                'message' => "No se puede eliminar a {$usuario->nombre}: {$datos}. Desactiva la cuenta en su lugar, así sus registros (y los QR de sus lotes) siguen funcionando.",
+            ], 422);
+        }
+
+        DB::transaction(function () use ($usuario) {
+            if ($usuario->productor) {
+                Alerta::where('productor_id', $usuario->productor->id)->delete();
+                $usuario->productor->delete();
+            }
+            $usuario->tokens()->delete();
+            $usuario->delete();
+        });
+
+        // usuario_afectado_id va vacio porque la cuenta ya no existe; el
+        // nombre y el correo quedan en la descripcion.
+        Auditoria::registrar($request->user()->id, null, 'eliminar_usuario', "Eliminó la cuenta de {$usuario->nombre} ({$usuario->email}), rol {$usuario->rol}, que no tenía datos registrados.");
+
+        return response()->json(['message' => 'Cuenta eliminada.']);
+    }
+
+    /**
+     * Devuelve lo que la cuenta ya tiene registrado (en palabras, para el
+     * mensaje), o null si esta vacia y se puede eliminar.
+     */
+    private function datosQueImpidenEliminar(User $usuario): ?string
+    {
+        $cantidad = fn (int $n, string $uno, string $varios) => $n . ' ' . ($n === 1 ? $uno : $varios);
+        $partes = [];
+
+        if ($usuario->productor) {
+            $parcelas = $usuario->productor->parcelas()->count();
+            if ($parcelas > 0) {
+                $lotes = Cosecha::whereIn('parcela_id', $usuario->productor->parcelas()->select('id'))->count();
+                $partes[] = 'tiene ' . $cantidad($parcelas, 'parcela', 'parcelas')
+                    . ($lotes > 0 ? ' y ' . $cantidad($lotes, 'lote', 'lotes') : '') . ' registrados';
+            }
+        }
+
+        $verificaciones = Verificacion::where('verificador_id', $usuario->id)->count();
+        if ($verificaciones > 0) {
+            $partes[] = 'revisó ' . $cantidad($verificaciones, 'solicitud de verificación', 'solicitudes de verificación');
+        }
+
+        $suelos = Parcela::where('verificador_id', $usuario->id)->count();
+        if ($suelos > 0) {
+            $partes[] = 'definió el suelo de ' . $cantidad($suelos, 'parcela', 'parcelas');
+        }
+
+        // Solo para administradores: lo que hicieron queda en la auditoria y
+        // al borrarlos se perderia quien lo hizo. (Un productor que edito
+        // sus propios datos tambien figura ahi, pero eso no cuenta.)
+        if ($usuario->rol === 'administrador') {
+            $acciones = Auditoria::where('usuario_id', $usuario->id)->count();
+            if ($acciones > 0) {
+                $partes[] = 'tiene ' . $cantidad($acciones, 'acción registrada', 'acciones registradas') . ' en Auditoría';
+            }
+        }
+
+        return $partes ? implode('; ', $partes) : null;
     }
 
     /**
