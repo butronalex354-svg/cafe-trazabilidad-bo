@@ -35,7 +35,7 @@
         label="Ingresar al sistema"
         icon-right="arrow_forward"
         class="cta-ingresar text-weight-bold q-mt-xl"
-        @click="mostrarLogin = true"
+        @click="abrirLogin"
       />
     </div>
 
@@ -165,6 +165,14 @@ onMounted(() => {
 // clic extra.
 const mostrarLogin = ref(!!route.query.google_error || route.query.sesion === 'cerrada')
 
+// En celular la presentacion se esconde al abrir el formulario (ver el CSS);
+// se vuelve arriba para que el formulario aparezca desde el principio y no
+// a la altura donde estaba el boton.
+function abrirLogin () {
+  mostrarLogin.value = true
+  window.scrollTo(0, 0)
+}
+
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
@@ -189,7 +197,13 @@ async function onSubmit () {
 <style scoped>
 .login-wrapper {
   position: relative;
+  /* "clip" recorta los brillos del fondo que se salen del borde sin volver
+     a esta caja una zona con scroll propio. Con "hidden"/"auto" la caja se
+     podia desplazar ~100px por dentro (al bajar hasta el boton) y despues
+     el formulario aparecia con la parte de arriba cortada. "hidden" queda
+     solo para navegadores viejos que no conocen "clip". */
   overflow: hidden;
+  overflow: clip;
   /* Alto minimo de la pantalla, pero crece si el contenido no entra
      (con alto fijo, en pantallas bajas el formulario quedaba cortado) */
   min-height: 100vh;
@@ -336,7 +350,8 @@ async function onSubmit () {
 
 /* En celular ya no hay lugar para 2 columnas lado a lado: el panel pasa
    a mostrarse arriba, apilado, y la pantalla deja de ser de altura fija
-   (window-height de Quasar) para poder hacer scroll si no entra todo. */
+   para poder hacer scroll si no entra todo (el scroll lo hace la pagina,
+   no esta caja). */
 @media (max-width: 1023px) {
   .login-wrapper {
     flex-direction: column;
@@ -345,7 +360,6 @@ async function onSubmit () {
        contenido apilado (panel + tarjeta) queda cortado sin poder hacer scroll. */
     height: auto !important;
     min-height: 100vh;
-    overflow-y: auto;
   }
   .hero-panel {
     flex: 0 0 auto;
@@ -372,6 +386,17 @@ async function onSubmit () {
   .form-panel {
     flex: 0 0 auto;
     padding: 24px 0 48px;
+  }
+  /* Al apretar "Ingresar al sistema" en celular: solo el formulario, sin
+     volver a mostrar el texto de presentacion encima (el logo ya va en la
+     tarjeta). El formulario ocupa la pantalla y queda centrado. */
+  .login-wrapper.revelado .hero-panel {
+    display: none;
+  }
+  .login-wrapper.revelado .form-panel {
+    flex: 1 1 auto;
+    min-height: 100vh;
+    padding: 32px 0;
   }
 }
 
