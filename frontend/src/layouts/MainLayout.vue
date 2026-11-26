@@ -2,7 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <q-header class="bg-header-cafe">
       <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menú" @click="alternarMenu" />
+        <q-btn v-if="!celular" flat dense round icon="menu" aria-label="Menú" @click="alternarMenu" />
         <img :src="logoCafeAndino" alt="Café Andino" class="brand-logo-header q-mx-sm" />
         <q-toolbar-title class="titulo-header">
           <span class="gt-xs">CaféTrace Bolivia</span>
@@ -114,7 +114,9 @@
       </q-toolbar>
     </q-header>
 
+    <!-- En celular y tablet el menu lateral se reemplaza por la barra de abajo (BarraCelular) -->
     <q-drawer
+      v-if="!celular"
       v-model="leftDrawerOpen"
       show-if-above
       :mini="miniState"
@@ -172,6 +174,15 @@
     <q-page-container>
       <router-view />
     </q-page-container>
+
+    <BarraCelular
+      v-if="celular"
+      :items="itemsBarra"
+      :rutas-atajos="atajosBarra"
+      :nombre="auth.user?.nombre || ''"
+      :rol="etiquetaRol"
+      @salir="cerrarSesion"
+    />
 
     <!-- Mi cuenta: datos de la cuenta de acceso (distinto del "registro de
          productor" que se edita en Parcelas) y cambio de contraseña. -->
@@ -303,6 +314,7 @@ import { useAdministradorStore } from '@/stores/administrador'
 import { api } from '@/boot/axios'
 import { reglaPassword, passwordValida, MENSAJE_PASSWORD, mensajeDeError } from '@/utils/validacionPassword'
 import logoCafeAndino from '@/assets/logo-cafe-andino-badge.png'
+import BarraCelular from '@/components/BarraCelular.vue'
 import logoCompleto from '@/assets/logo-cafe-andino.png'
 
 const auth = useAuthStore()
@@ -434,6 +446,28 @@ const itemsMenu = computed(() => {
     { label: 'Alertas', detalle: 'Plagas y avisos', icono: 'notifications_active', ruta: '/productor/calidad?seccion=alertas', badge: calidad.alertasNoLeidas }
   ]
 })
+
+// Celular y tablet (< 1024px): barra flotante abajo, como una app, en vez del menu lateral.
+const celular = computed(() => $q.screen.lt.md)
+
+// La barra usa las mismas secciones del menu lateral, con nombres cortos para
+// que entren, mas las que en escritorio estan en el menu de Ajustes.
+const NOMBRES_CORTOS = { '/administrador/buscar': 'Buscar', '/administrador/exportacion': 'Exportar' }
+const EXTRAS_BARRA = {
+  productor: [{ label: 'Historial de verificaciones', icono: 'fact_check', ruta: '/productor/historial' }],
+  verificador: [{ label: 'Mi historial', icono: 'history', ruta: '/verificador/historial' }],
+  administrador: [{ label: 'Catálogos', icono: 'category', ruta: '/administrador/catalogos' }]
+}
+const itemsBarra = computed(() => [
+  ...itemsMenu.value.map(i => ({ ...i, corto: NOMBRES_CORTOS[i.ruta] })),
+  ...(EXTRAS_BARRA[auth.rol] || [])
+])
+// Los 4 accesos fijos de la barra por rol; lo demas va en "Más"
+const atajosBarra = computed(() => ({
+  productor: ['/productor', '/productor/parcelas', '/productor/produccion', '/productor/calidad'],
+  verificador: ['/verificador', '/verificador/pendientes', '/verificador/observados', '/verificador/verificados'],
+  administrador: ['/administrador', '/administrador/buscar', '/administrador/reclamos', '/administrador/exportacion']
+}[auth.rol] || itemsMenu.value.slice(0, 4).map(i => i.ruta)))
 
 const notificaciones = ref([
   // Placeholder de ejemplo: cuando existan modulos reales de Calidad/Alertas,
